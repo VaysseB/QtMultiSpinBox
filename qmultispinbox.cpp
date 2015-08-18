@@ -109,6 +109,8 @@ void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element)
 
     Q_D(QMultiSpinBox);
     d->insert(index, element);
+
+    Q_EMIT elementCountChanged(elementCount());
 }
 
 
@@ -124,6 +126,9 @@ QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
 
     Q_D(QMultiSpinBox);
     QScopedPointer<QMultiSpinBoxData> eData(d->take(index));
+
+    Q_EMIT elementCountChanged(elementCount());
+
     return eData.data()->element;
 }
 
@@ -159,6 +164,23 @@ void QMultiSpinBox::setTextAlignement(Qt::Alignment align)
     Q_EMIT textAlignementChanged(align);
 }
 
+
+int QMultiSpinBox::currentSectionIndex() const
+{
+    Q_D(const QMultiSpinBox);
+    return d->currentSectionIndex;
+}
+
+void QMultiSpinBox::setCurrentSectionIndex(int index)
+{
+    Q_D(QMultiSpinBox);
+    if (index < 0 || index >= elementCount())
+        d->currentSectionIndex = -1;
+    else
+        d->currentSectionIndex = index;
+    Q_EMIT currentSectionIndexChanged(index);
+}
+
 //------------------------------------------------------------------------------
 // display stuff
 
@@ -181,9 +203,34 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
 
     style()->drawComplexControl(QStyle::CC_SpinBox, &option, &painter, this);
 
-    style()->drawItemText(&painter, internalTextRect(),
-                          0, palette(), true,
-                          d->text(), QPalette::Text);
+    if (d->currentSectionIndex < 0)
+        style()->drawItemText(&painter, internalTextRect(),
+                              0, palette(), true,
+                              d->text(), QPalette::Text);
+    else {
+        QRect textRect = internalTextRect();
+        int index = 0;
+        foreach(QMultiSpinBoxData* eData, d->elementDatas) {
+            QSize s = fontMetrics().size(Qt::TextSingleLine, eData->fullText());
+
+            if (d->currentSectionIndex == index++) {
+                painter.fillRect(QRect(textRect.topLeft(), s),
+                                 QBrush(palette().color(QPalette::Highlight)));
+                style()->drawItemText(&painter, textRect,
+                                      0, palette(), true,
+                                      eData->fullText(),
+                                      QPalette::HighlightedText);
+            }
+            else {
+                style()->drawItemText(&painter, textRect,
+                                      0, palette(), true,
+                                      eData->fullText(),
+                                      QPalette::Text);
+            }
+
+            textRect.setLeft(textRect.left() + s.width());
+        }
+    }
 }
 
 
@@ -302,6 +349,7 @@ QMultiSpinBoxPrivate::~QMultiSpinBoxPrivate()
 
 void QMultiSpinBoxPrivate::clear()
 {
+    currentSectionIndex = -1;
     cachedText.resize(0);
     qDeleteAll(elementDatas);
 }

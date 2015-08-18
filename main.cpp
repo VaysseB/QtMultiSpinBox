@@ -18,9 +18,11 @@ int main(int argc, char *argv[])
     QLabel* titleLabel = new QLabel(QLatin1String("QMultiSpinBox"), &root);
     QMultiSpinBox* msp = new QMultiSpinBox(&root);
 
+    msp->setTextAlignement(Qt::AlignCenter);
+
     msp->insertSpinElement(0, new QMultiSpinBoxBinaryElement);
     msp->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
-    msp->setTextAlignement(Qt::AlignCenter);
+    msp->setCurrentSectionIndex(1);
 
     root.layout()->addWidget(titleLabel);
     root.layout()->addWidget(msp);

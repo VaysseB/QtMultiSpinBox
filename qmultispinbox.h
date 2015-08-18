@@ -62,6 +62,8 @@ class QMultiSpinBox : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(Qt::Alignment textAlignement READ textAlignement WRITE setTextAlignement NOTIFY textAlignementChanged)
+    Q_PROPERTY(int elementCount READ elementCount NOTIFY elementCountChanged)
+    Q_PROPERTY(int currentSectionIndex READ currentSectionIndex WRITE setCurrentSectionIndex NOTIFY currentSectionIndexChanged)
 
 
 public:
@@ -78,6 +80,7 @@ public:
     QString text() const;
     int elementCount() const;
     Qt::Alignment textAlignement() const;
+    int currentSectionIndex() const;
 
 
     // drawing stuff
@@ -98,10 +101,13 @@ public slots:
 
 
     void setTextAlignement(Qt::Alignment align);
+    void setCurrentSectionIndex(int index);
 
 
 signals:
     void textAlignementChanged(Qt::Alignment align);
+    void elementCountChanged(int count);
+    void currentSectionIndexChanged(int index);
 
 
 protected:
@@ -146,9 +152,10 @@ public:
 
 public:
     QString cachedText;
+    Qt::Alignment textAlign;
+    int currentSectionIndex;
 
     QList<QMultiSpinBoxData*> elementDatas;
-    Qt::Alignment textAlign;
 };
 
 QT_END_NAMESPACE
