@@ -39,12 +39,19 @@ class QMultiSpinBoxData
 public:
     QMultiSpinBoxData(QMultiSpinBoxElement* element);
 
-    int size() const { return lastIndex - firstIndex; } // with prefix + suffix
+    int size() const { return lastIndex - firstIndex + prefixLength + suffixLength; } // with prefix + suffix
     void shiftLeft(int offset) { shiftLeft(-1 * offset); }
     void shiftRight(int offset);
 
+    QString fullText() const;
+
     QMultiSpinBoxElement* element;
-    int firstIndex, lastIndex;
+    int prefixLength, suffixLength;
+    QString prefix, suffix;
+
+    int firstIndex, lastIndex; // without prefix nor suffix
+
+    QString text;
 };
 
 
@@ -133,8 +140,13 @@ public:
     QMultiSpinBoxData* take(int index);
 
 
+    int textLength() const { return cachedText.length(); }
+    QString text() const { return cachedText; }
+    void invalidateText();
+
 public:
-    QString text;
+    QString cachedText;
+
     QList<QMultiSpinBoxData*> elementDatas;
     Qt::Alignment textAlign;
 };

@@ -18,8 +18,13 @@ QMultiSpinBoxElement::~QMultiSpinBoxElement()
 
 QMultiSpinBoxData::QMultiSpinBoxData(QMultiSpinBoxElement* element) :
     element(element),
+    prefixLength(element->prefix().length()),
+    suffixLength(element->suffix().length()),
+    prefix(element->prefix()),
+    suffix(element->suffix()),
     firstIndex(-1),
-    lastIndex(-1)
+    lastIndex(-1),
+    text(element->defaultText())
 {
 }
 
@@ -32,6 +37,11 @@ void QMultiSpinBoxData::shiftRight(int offset)
     }
 }
 
+
+QString QMultiSpinBoxData::fullText() const
+{
+    return prefix + text + suffix;
+}
 
 //==============================================================================
 
@@ -121,7 +131,7 @@ QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
 QString QMultiSpinBox::text() const
 {
     Q_D(const QMultiSpinBox);
-    return d->text;
+    return d->text();
 }
 
 
@@ -173,7 +183,7 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
 
     style()->drawItemText(&painter, internalTextRect(),
                           0, palette(), true,
-                          d->text, QPalette::Text);
+                          d->text(), QPalette::Text);
 }
 
 
@@ -212,7 +222,7 @@ QRect QMultiSpinBox::internalTextRect() const
     Q_D(const QMultiSpinBox);
     QRect rSpace = internalFrameRect();
     QPoint p(0, 0);
-    QSize s(fontMetrics().size(Qt::TextSingleLine, d->text));
+    QSize s(fontMetrics().size(Qt::TextSingleLine, d->text()));
 
     // horizontal: left
     s.rwidth() = qMin(s.width(), rSpace.width());
@@ -256,7 +266,7 @@ QSize QMultiSpinBox::minimumSizeHint() const
 {
     Q_D(const QMultiSpinBox);
 
-    QSize s = fontMetrics().size(Qt::TextSingleLine, d->text);
+    QSize s = fontMetrics().size(Qt::TextSingleLine, d->text());
     s.rheight() += margins().top() + margins().bottom();
     s.rwidth() += margins().left() + margins().right();
 
@@ -292,14 +302,13 @@ QMultiSpinBoxPrivate::~QMultiSpinBoxPrivate()
 
 void QMultiSpinBoxPrivate::clear()
 {
+    cachedText.resize(0);
     qDeleteAll(elementDatas);
-    text.resize(0);
 }
 
 
 void QMultiSpinBoxPrivate::reset()
 {
-    text.resize(0);
 }
 
 
@@ -310,15 +319,13 @@ void QMultiSpinBoxPrivate::insert(int index, QMultiSpinBoxElement* element)
 
     elementDatas.insert(index, newElement);
 
-    QString finalText = element->prefix()
-            + element->defaultText()
-            + element->suffix();
-    text.insert(index, finalText);
-    newElement->firstIndex = index;
-    newElement->lastIndex = index + finalText.count();
+    newElement->firstIndex = textLength() + newElement->prefixLength;
+    newElement->lastIndex = newElement->firstIndex + element->defaultText().count();
 
     for (int i=index+1; i<elementDatas.count(); i++)
         elementDatas.value(i)->shiftRight(newElement->size());
+
+    invalidateText();
 }
 
 
@@ -330,7 +337,14 @@ QMultiSpinBoxData* QMultiSpinBoxPrivate::take(int index)
     for (int i=index; i<elementDatas.count(); i++)
         elementDatas.value(i)->shiftLeft(takenElementData->size());
 
-    text.remove(index, takenElementData->size());
+    invalidateText();
 
     return takenElementData;
+}
+
+void QMultiSpinBoxPrivate::invalidateText()
+{
+    cachedText.resize(0);
+    foreach(QMultiSpinBoxData* eData, elementDatas)
+        cachedText.append(eData->fullText());
 }

@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     QMultiSpinBox* msp = new QMultiSpinBox(&root);
 
     msp->insertSpinElement(0, new QMultiSpinBoxBinaryElement);
+    msp->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
     msp->setTextAlignement(Qt::AlignCenter);
 
     root.layout()->addWidget(titleLabel);
