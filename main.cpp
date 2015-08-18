@@ -20,9 +20,12 @@ int main(int argc, char *argv[])
 
     msp->setTextAlignement(Qt::AlignCenter);
 
-    msp->insertSpinElement(0, new QMultiSpinBoxBinaryElement);
+    msp->setPrefix(QString("0b"));
+    msp->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QString(" - 0b"));
     msp->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
-    msp->setCurrentSectionIndex(1);
+    msp->setCurrentSectionIndex(0);
+
+    msp->setSuffixOf(0, " & 0b");
 
     root.layout()->addWidget(titleLabel);
     root.layout()->addWidget(msp);

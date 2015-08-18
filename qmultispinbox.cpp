@@ -16,14 +16,11 @@ QMultiSpinBoxElement::~QMultiSpinBoxElement()
 //==============================================================================
 
 
-QMultiSpinBoxData::QMultiSpinBoxData(QMultiSpinBoxElement* element) :
+QMultiSpinBoxData::QMultiSpinBoxData(QMultiSpinBoxElement* element,
+                                     const QString& suffix) :
     element(element),
-    prefixLength(element->prefix().length()),
-    suffixLength(element->suffix().length()),
-    prefix(element->prefix()),
-    suffix(element->suffix()),
-    firstIndex(-1),
-    lastIndex(-1),
+    suffix(suffix),
+    startIndex(-1),
     text(element->defaultText())
 {
 }
@@ -31,16 +28,20 @@ QMultiSpinBoxData::QMultiSpinBoxData(QMultiSpinBoxElement* element) :
 
 void QMultiSpinBoxData::shiftRight(int offset)
 {
-    if (firstIndex >= 0) {
-        firstIndex += offset;
-        lastIndex += offset;
-    }
+    if (startIndex >= 0)
+        startIndex += offset;
 }
 
 
 QString QMultiSpinBoxData::fullText() const
 {
-    return prefix + text + suffix;
+    return text + suffix;
+}
+
+
+int QMultiSpinBoxData::fullLength() const
+{
+    return text.length() + suffix.length();
 }
 
 //==============================================================================
@@ -77,7 +78,7 @@ void QMultiSpinBox::reset()
 }
 
 
-void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element)
+void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element, const QString &suffix)
 {
     Q_ASSERT(index >= 0 && index <= elementCount());
     Q_ASSERT(element != NULL);
@@ -108,7 +109,7 @@ void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element)
                "non-breaking space character is not acceptable");
 
     Q_D(QMultiSpinBox);
-    d->insert(index, element);
+    d->insert(index, element, suffix);
 
     Q_EMIT elementCountChanged(elementCount());
 }
@@ -181,6 +182,34 @@ void QMultiSpinBox::setCurrentSectionIndex(int index)
     Q_EMIT currentSectionIndexChanged(index);
 }
 
+QString QMultiSpinBox::prefix() const
+{
+    Q_D(const QMultiSpinBox);
+    return d->prefix;
+}
+
+void QMultiSpinBox::setPrefix(const QString& prefix)
+{
+    Q_D(QMultiSpinBox);
+    d->prefix = prefix;
+    d->invalidateText();
+}
+
+QString QMultiSpinBox::suffixOf(int index) const
+{
+    Q_ASSERT(index >= 0 && index < elementCount());
+    Q_D(const QMultiSpinBox);
+    return d->elementDatas.value(index)->suffix;
+}
+
+void QMultiSpinBox::setSuffixOf(int index, const QString& suffix)
+{
+    Q_ASSERT(index >= 0 && index < elementCount());
+    Q_D(QMultiSpinBox);
+    d->elementDatas.value(index)->suffix = suffix;
+    d->invalidateText();
+}
+
 //------------------------------------------------------------------------------
 // display stuff
 
@@ -193,6 +222,7 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
     // no ellide of text, all is visible
 
     QPainter painter(this);
+    QFontMetrics fm(fontMetrics());
 
     QStyleOptionSpinBox option;
     option.initFrom(this);
@@ -210,23 +240,45 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
     else {
         QRect textRect = internalTextRect();
         int index = 0;
+
+        // prefix
+        QSize s = fm.size(Qt::TextSingleLine, d->prefix);
+        style()->drawItemText(&painter, textRect,
+                              0, palette(), true,
+                              d->prefix,
+                              QPalette::Text);
+        textRect.setLeft(textRect.left() + s.width());
+
+        // element
         foreach(QMultiSpinBoxData* eData, d->elementDatas) {
-            QSize s = fontMetrics().size(Qt::TextSingleLine, eData->fullText());
+            // element content
+            s = fm.size(Qt::TextSingleLine, eData->text);
 
             if (d->currentSectionIndex == index++) {
                 painter.fillRect(QRect(textRect.topLeft(), s),
                                  QBrush(palette().color(QPalette::Highlight)));
                 style()->drawItemText(&painter, textRect,
                                       0, palette(), true,
-                                      eData->fullText(),
+                                      eData->text,
                                       QPalette::HighlightedText);
             }
             else {
                 style()->drawItemText(&painter, textRect,
                                       0, palette(), true,
-                                      eData->fullText(),
+                                      eData->text,
                                       QPalette::Text);
             }
+
+            textRect.setLeft(textRect.left() + s.width());
+
+
+            // suffix
+            s = fm.size(Qt::TextSingleLine, eData->suffix);
+
+            style()->drawItemText(&painter, textRect,
+                                  0, palette(), true,
+                                  eData->suffix,
+                                  QPalette::Text);
 
             textRect.setLeft(textRect.left() + s.width());
         }
@@ -239,10 +291,12 @@ QMargins QMultiSpinBox::margins()
     return QMargins(2, 2, 2, 2);
 }
 
+
 int QMultiSpinBox::buttonColumnWidth() const
 {
     return 12;
 }
+
 
 QRect QMultiSpinBox::internalFrameRect() const
 {
@@ -292,6 +346,8 @@ QRect QMultiSpinBox::internalTextRect() const
     // vertical: center
     else if (d->textAlign.testFlag(Qt::AlignVCenter))
         p.ry() = rSpace.y() + (rSpace.height() - s.height()) * 0.5;
+
+    s.rwidth() += 1; // for loss of precision
 
     return QRect(p, s);
 }
@@ -351,7 +407,9 @@ void QMultiSpinBoxPrivate::clear()
 {
     currentSectionIndex = -1;
     cachedText.resize(0);
+    prefix.resize(0);
     qDeleteAll(elementDatas);
+    elementDatas.clear();
 }
 
 
@@ -360,18 +418,17 @@ void QMultiSpinBoxPrivate::reset()
 }
 
 
-void QMultiSpinBoxPrivate::insert(int index, QMultiSpinBoxElement* element)
+void QMultiSpinBoxPrivate::insert(int index, QMultiSpinBoxElement* element, const QString &suffix)
 {
-    QMultiSpinBoxData* newElement = new QMultiSpinBoxData(element);
+    QMultiSpinBoxData* newElement = new QMultiSpinBoxData(element, suffix);
     // index is valid, element not null
 
     elementDatas.insert(index, newElement);
 
-    newElement->firstIndex = textLength() + newElement->prefixLength;
-    newElement->lastIndex = newElement->firstIndex + element->defaultText().count();
+    newElement->startIndex = textLength(index);
 
     for (int i=index+1; i<elementDatas.count(); i++)
-        elementDatas.value(i)->shiftRight(newElement->size());
+        elementDatas.value(i)->shiftRight(newElement->fullLength());
 
     invalidateText();
 }
@@ -383,7 +440,7 @@ QMultiSpinBoxData* QMultiSpinBoxPrivate::take(int index)
     QMultiSpinBoxData* takenElementData = elementDatas.takeAt(index);
 
     for (int i=index; i<elementDatas.count(); i++)
-        elementDatas.value(i)->shiftLeft(takenElementData->size());
+        elementDatas.value(i)->shiftLeft(takenElementData->fullLength());
 
     invalidateText();
 
@@ -393,6 +450,18 @@ QMultiSpinBoxData* QMultiSpinBoxPrivate::take(int index)
 void QMultiSpinBoxPrivate::invalidateText()
 {
     cachedText.resize(0);
+    cachedText.append(prefix);
     foreach(QMultiSpinBoxData* eData, elementDatas)
         cachedText.append(eData->fullText());
+}
+
+int QMultiSpinBoxPrivate::textLength(int count) const
+{
+    int length = 0;
+    foreach(QMultiSpinBoxData* eData, elementDatas) {
+        if (count-- <= 0)
+            break;
+        length += eData->fullLength();
+    }
+    return length;
 }

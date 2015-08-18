@@ -21,11 +21,9 @@ public:
 
     virtual int minimumInputLength() const = 0; // exclude prefix and suffix
     virtual int maximumInputLength() const = 0;
-    virtual QString prefix() const { return QString(); }
-    virtual QString suffix() const { return QString(); }
 
     virtual QString defaultText() const = 0; // return string (min <= len <= max)
-    virtual bool acceptableChar(const QChar& ch) const = 0; // exclude prefix and suffix
+    virtual bool acceptableChar(const QChar& ch, int pos = -1) const = 0; // exclude prefix and suffix (-1 for general)
 
     virtual bool extractValue(const QString& text, QVariant& value) const = 0; // true if value is extractable
     virtual bool displayValue(const QVariant& value, QString& text) const = 0; // true if value is displayable
@@ -37,19 +35,18 @@ public:
 class QMultiSpinBoxData
 {
 public:
-    QMultiSpinBoxData(QMultiSpinBoxElement* element);
+    QMultiSpinBoxData(QMultiSpinBoxElement* element, const QString &suffix);
 
-    int size() const { return lastIndex - firstIndex + prefixLength + suffixLength; } // with prefix + suffix
     void shiftLeft(int offset) { shiftLeft(-1 * offset); }
     void shiftRight(int offset);
 
+    int fullLength() const;
     QString fullText() const;
 
     QMultiSpinBoxElement* element;
-    int prefixLength, suffixLength;
-    QString prefix, suffix;
+    QString suffix;
 
-    int firstIndex, lastIndex; // without prefix nor suffix
+    int startIndex; // without prefix nor suffix
 
     QString text;
 };
@@ -64,6 +61,7 @@ class QMultiSpinBox : public QWidget
     Q_PROPERTY(Qt::Alignment textAlignement READ textAlignement WRITE setTextAlignement NOTIFY textAlignementChanged)
     Q_PROPERTY(int elementCount READ elementCount NOTIFY elementCountChanged)
     Q_PROPERTY(int currentSectionIndex READ currentSectionIndex WRITE setCurrentSectionIndex NOTIFY currentSectionIndexChanged)
+    Q_PROPERTY(QString prefix READ prefix WRITE setPrefix)
 
 
 public:
@@ -81,6 +79,8 @@ public:
     int elementCount() const;
     Qt::Alignment textAlignement() const;
     int currentSectionIndex() const;
+    QString prefix() const;
+    QString suffixOf(int index) const; // between (index, index+1)
 
 
     // drawing stuff
@@ -95,13 +95,15 @@ public:
 
 
 public slots:
-    void insertSpinElement(int index, QMultiSpinBoxElement* element);
+    void insertSpinElement(int index, QMultiSpinBoxElement* element, const QString &suffix = QString());
     QMultiSpinBoxElement* takeSpinElement(int index);
     void removeSpinElement(int index);
 
 
     void setTextAlignement(Qt::Alignment align);
-    void setCurrentSectionIndex(int index);
+    void setCurrentSectionIndex(int index); // if not valid, set -1
+    void setPrefix(const QString& prefix);
+    void setSuffixOf(int index, const QString& suffix);
 
 
 signals:
@@ -142,7 +144,7 @@ public:
     void reset();
 
 
-    void insert(int index, QMultiSpinBoxElement* element);
+    void insert(int index, QMultiSpinBoxElement* element, const QString &suffix);
     QMultiSpinBoxData* take(int index);
 
 
@@ -150,11 +152,14 @@ public:
     QString text() const { return cachedText; }
     void invalidateText();
 
+    int textLength(int count) const;
+
 public:
     QString cachedText;
     Qt::Alignment textAlign;
     int currentSectionIndex;
 
+    QString prefix;
     QList<QMultiSpinBoxData*> elementDatas;
 };
 
