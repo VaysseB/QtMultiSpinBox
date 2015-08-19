@@ -8,19 +8,18 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignLeft"),     (int)Qt::AlignLeft);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignLeading"),  (int)Qt::AlignLeading);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignRight"),    (int)Qt::AlignRight);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignTrailing"), (int)Qt::AlignTrailing);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignHCenter"),  (int)Qt::AlignHCenter);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignJustify"),  (int)Qt::AlignJustify);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignAbsolute"), (int)Qt::AlignAbsolute);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignTop"),      (int)Qt::AlignTop);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignBottom"),   (int)Qt::AlignBottom);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignVCenter"),  (int)Qt::AlignVCenter);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignBaseline"), (int)Qt::AlignBaseline);
-    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignCenter"),   (int)Qt::AlignCenter);
-    ui->comboTextAlign->setCurrentIndex(ui->comboTextAlign->count()-1);
+    ui->comboHTextAlign->addItem(QLatin1String("Qt::AlignLeft"),     (int)Qt::AlignLeft);
+    ui->comboHTextAlign->addItem(QLatin1String("Qt::AlignLeading"),  (int)Qt::AlignLeading);
+    ui->comboHTextAlign->addItem(QLatin1String("Qt::AlignRight"),    (int)Qt::AlignRight);
+    ui->comboHTextAlign->addItem(QLatin1String("Qt::AlignTrailing"), (int)Qt::AlignTrailing);
+    ui->comboHTextAlign->addItem(QLatin1String("Qt::AlignHCenter"),  (int)Qt::AlignHCenter);
+    ui->comboHTextAlign->setCurrentIndex(ui->comboHTextAlign->count()-1);
+
+    ui->comboVTextAlign->addItem(QLatin1String("Qt::AlignTop"),      (int)Qt::AlignTop);
+    ui->comboVTextAlign->addItem(QLatin1String("Qt::AlignBottom"),   (int)Qt::AlignBottom);
+    ui->comboVTextAlign->addItem(QLatin1String("Qt::AlignBaseline"), (int)Qt::AlignBaseline);
+    ui->comboVTextAlign->addItem(QLatin1String("Qt::AlignVCenter"),  (int)Qt::AlignVCenter);
+    ui->comboVTextAlign->setCurrentIndex(ui->comboVTextAlign->count()-1);
 
     //
     buildRow1();
@@ -34,7 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(updateAllWithOptions()));
     connect(ui->spinCurrentSection, SIGNAL(valueChanged(int)),
             this, SLOT(updateAllWithOptions()));
-    connect(ui->comboTextAlign, SIGNAL(currentIndexChanged(int)),
+    connect(ui->comboHTextAlign, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(updateAllWithOptions()));
+    connect(ui->comboVTextAlign, SIGNAL(currentIndexChanged(int)),
             this, SLOT(updateAllWithOptions()));
 }
 
@@ -60,7 +61,8 @@ void MainWindow::updateAllWithOptions() const
 {
     foreach(QMultiSpinBox* m, allMultiSpinBox()) {
         m->setEnabled(ui->checkEnable->isChecked());
-        m->setTextAlignement((Qt::Alignment)ui->comboTextAlign->currentData().toInt());
+        m->setTextAlignement((Qt::Alignment)ui->comboHTextAlign->currentData().toInt()
+                             | (Qt::Alignment)ui->comboVTextAlign->currentData().toInt());
         m->setCurrentSectionIndex(ui->spinCurrentSection->value());
     }
 }
