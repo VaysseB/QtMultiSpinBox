@@ -253,19 +253,26 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
     option.stepEnabled = QAbstractSpinBox::StepUpEnabled
             | QAbstractSpinBox::StepDownEnabled;
 
+    QRect emptySpace = style()->subControlRect(QStyle::CC_SpinBox,
+                                           &option,
+                                           QStyle::SC_SpinBoxEditField,
+                                           this);
+
+    // *** Draw ***
     // draw the spinbox frame and buttons
     style()->drawComplexControl(QStyle::CC_SpinBox, &option, &painter, this);
 
     // if nothing is selected
     if (d->currentSectionIndex < 0) {
-        QSize sztext = fontMetrics().size(Qt::TextSingleLine, d->text());
-        style()->drawItemText(&painter, align(sztext),
+        QSize textSize = fontMetrics().size(Qt::TextSingleLine, d->text());
+        QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, textSize, emptySpace);
+        style()->drawItemText(&painter, textRect,
                               0, palette(), true,
                               d->text(), QPalette::Text);
     }
     else {
         QSize sztext = fontMetrics().size(Qt::TextSingleLine, d->text());
-        QRect textRect = align(sztext);
+        QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, sztext, emptySpace);
         int index = 0;
 
         // prefix
@@ -312,55 +319,6 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
             textRect.setLeft(textRect.left() + s.width());
         }
     }
-}
-
-
-QRect QMultiSpinBox::align(const QSize& textSize) const
-{
-    Q_D(const QMultiSpinBox);
-
-    // get available space (remove borders and buttons)
-    QStyleOptionSpinBox option;
-    option.initFrom(this);
-    option.frame = true;
-    option.buttonSymbols = QAbstractSpinBox::UpDownArrows;
-    option.stepEnabled = QAbstractSpinBox::StepUpEnabled
-            | QAbstractSpinBox::StepDownEnabled;
-
-    QRect rSpace = style()->subControlRect(QStyle::CC_SpinBox,
-                                           &option,
-                                           QStyle::SC_SpinBoxEditField,
-                                           this);
-
-    // align text
-    QPoint p(0, 0);
-    QSize s(textSize);
-
-    // horizontal: left
-    s.rwidth() = qMin(s.width(), rSpace.width());
-    if (d->textAlign.testFlag(Qt::AlignLeft))
-        p.rx() = rSpace.x();
-    // horizontal: right
-    else if (d->textAlign.testFlag(Qt::AlignRight))
-        p.rx() = rSpace.x() + (rSpace.width() - s.width());
-    // horizontal: center
-    else if (d->textAlign.testFlag(Qt::AlignHCenter))
-        p.rx() = rSpace.x() + (rSpace.width() - s.width()) * 0.5;
-
-    // vertical: up
-    s.rheight() = qMin(s.height(), rSpace.height());
-    if (d->textAlign.testFlag(Qt::AlignTop))
-        p.ry() = rSpace.y();
-    // vertical: down
-    else if (d->textAlign.testFlag(Qt::AlignBottom))
-        p.ry() = rSpace.y() + (rSpace.height() - s.height());
-    // vertical: center
-    else if (d->textAlign.testFlag(Qt::AlignVCenter))
-        p.ry() = rSpace.y() + (rSpace.height() - s.height()) * 0.5;
-
-    s.rwidth() += 1; // for loss of precision
-
-    return QRect(p, s);
 }
 
 

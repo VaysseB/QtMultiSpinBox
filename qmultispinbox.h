@@ -108,6 +108,7 @@ public slots:
     void setSuffixOf(int index, const QString& suffix);
 
 
+
 signals:
     void textAlignementChanged(Qt::Alignment align);
     void elementCountChanged(int count);
@@ -116,11 +117,6 @@ signals:
 
 protected:
     QMultiSpinBox(QMultiSpinBoxPrivate &dd, QWidget* parent = 0);
-
-
-private:
-     // exact rectangle of the text content
-    QRect align(const QSize &textSize) const;
 
 
 private:
