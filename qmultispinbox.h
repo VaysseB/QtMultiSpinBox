@@ -117,11 +117,8 @@ protected:
 
 
 private:
-    QRect internalFrameRect() const; // get available space (remove borders)
-    QRect internalTextRect() const; // exact rectangle of the text content
-    int buttonColumnWidth() const;
-
-    static QMargins margins();
+     // exact rectangle of the text content
+    QRect align(const QSize &textSize) const;
 
 
 private:

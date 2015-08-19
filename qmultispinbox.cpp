@@ -1,6 +1,7 @@
 #include "qmultispinbox.h"
 
 #include <QStyleOptionSpinBox>
+#include <QDebug>
 
 
 QMultiSpinBoxElement::QMultiSpinBoxElement()
@@ -241,14 +242,19 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
     option.stepEnabled = QAbstractSpinBox::StepUpEnabled
             | QAbstractSpinBox::StepDownEnabled;
 
+    // draw the spinbox frame and buttons
     style()->drawComplexControl(QStyle::CC_SpinBox, &option, &painter, this);
 
-    if (d->currentSectionIndex < 0)
-        style()->drawItemText(&painter, internalTextRect(),
+    // if nothing is selected
+    if (d->currentSectionIndex < 0) {
+        QSize sztext = fontMetrics().size(Qt::TextSingleLine, d->text());
+        style()->drawItemText(&painter, align(sztext),
                               0, palette(), true,
                               d->text(), QPalette::Text);
+    }
     else {
-        QRect textRect = internalTextRect();
+        QSize sztext = fontMetrics().size(Qt::TextSingleLine, d->text());
+        QRect textRect = align(sztext);
         int index = 0;
 
         // prefix
@@ -259,11 +265,12 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
                               QPalette::Text);
         textRect.setLeft(textRect.left() + s.width());
 
-        // element
+        // draw each element
         foreach(QMultiSpinBoxData* eData, d->elementDatas) {
             // element content
             s = fm.size(Qt::TextSingleLine, eData->text);
 
+            // if the element is selected
             if (d->currentSectionIndex == index++) {
                 painter.fillRect(QRect(textRect.topLeft(), s),
                                  QBrush(palette().color(QPalette::Highlight)));
@@ -272,6 +279,7 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
                                       eData->text,
                                       QPalette::HighlightedText);
             }
+            // if the element is not selected
             else {
                 style()->drawItemText(&painter, textRect,
                                       0, palette(), true,
@@ -296,23 +304,11 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
 }
 
 
-QMargins QMultiSpinBox::margins()
+QRect QMultiSpinBox::align(const QSize& textSize) const
 {
-    return QMargins(2, 2, 2, 2);
-}
+    Q_D(const QMultiSpinBox);
 
-
-int QMultiSpinBox::buttonColumnWidth() const
-{
-    return 12;
-}
-
-
-QRect QMultiSpinBox::internalFrameRect() const
-{
-    // get available space (remove borders)
-    QRect r = QRect(QPoint(0, 0), size());
-
+    // get available space (remove borders and buttons)
     QStyleOptionSpinBox option;
     option.initFrom(this);
     option.frame = true;
@@ -320,20 +316,14 @@ QRect QMultiSpinBox::internalFrameRect() const
     option.stepEnabled = QAbstractSpinBox::StepUpEnabled
             | QAbstractSpinBox::StepDownEnabled;
 
-    r.setWidth(r.width()
-               - style()->pixelMetric(QStyle::PM_SpinBoxFrameWidth, &option, this) * 2
-               - buttonColumnWidth());
+    QRect rSpace = style()->subControlRect(QStyle::CC_SpinBox,
+                                           &option,
+                                           QStyle::SC_SpinBoxEditField,
+                                           this);
 
-    return r.marginsRemoved(margins());
-}
-
-
-QRect QMultiSpinBox::internalTextRect() const
-{
-    Q_D(const QMultiSpinBox);
-    QRect rSpace = internalFrameRect();
+    // align text
     QPoint p(0, 0);
-    QSize s(fontMetrics().size(Qt::TextSingleLine, d->text()));
+    QSize s(textSize);
 
     // horizontal: left
     s.rwidth() = qMin(s.width(), rSpace.width());
@@ -362,6 +352,7 @@ QRect QMultiSpinBox::internalTextRect() const
     return QRect(p, s);
 }
 
+
 //------------------------------------------------------------------------------
 // size stuff
 
@@ -369,8 +360,8 @@ QRect QMultiSpinBox::internalTextRect() const
 QSize QMultiSpinBox::sizeHint() const
 {
     QSize size = minimumSizeHint();
-    size.rwidth() += 20;
-    size.rheight() += 6;
+    size.rwidth() += 10;
+    size.rheight() += 1;
     return size;
 }
 
@@ -380,8 +371,6 @@ QSize QMultiSpinBox::minimumSizeHint() const
     Q_D(const QMultiSpinBox);
 
     QSize s = fontMetrics().size(Qt::TextSingleLine, d->text());
-    s.rheight() += margins().top() + margins().bottom();
-    s.rwidth() += margins().left() + margins().right();
 
     QStyleOptionSpinBox option;
     option.initFrom(this);
@@ -389,9 +378,16 @@ QSize QMultiSpinBox::minimumSizeHint() const
     option.buttonSymbols = QAbstractSpinBox::UpDownArrows;
     option.stepEnabled = QAbstractSpinBox::StepUpEnabled
             | QAbstractSpinBox::StepDownEnabled;
+    QSize buttonSize = style()->subControlRect(QStyle::CC_SpinBox,
+                                               &option,
+                                               QStyle::SC_SpinBoxDown,
+                                               this).size();
 
-    s.rwidth() += style()->pixelMetric(QStyle::PM_SpinBoxFrameWidth, &option, this) * 2;
-    s.rwidth() += buttonColumnWidth(); // left buttons
+    s.rwidth() += buttonSize.width();
+    s.rheight() = qMax(s.height(), buttonSize.height() * 2);
+
+    s.rwidth() += 4; // abstract margins
+    s.rheight() += 2; // abstract margins
 
     return s;
 }
