@@ -265,26 +265,23 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
     // if nothing is selected AND cursor is away
     if (d->currentSectionIndex < 0) {
 //            && d->cursoPos < 0) {
-        QSize textSize = fm.size(Qt::TextSingleLine, d->text());
-        QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, textSize, emptySpace);
+        QRect textRect = fm.boundingRect(emptySpace, (int)d->textAlign | (int)Qt::TextSingleLine, d->text());
         style()->drawItemText(&painter, textRect,
                               0, palette(), true,
                               d->text(), QPalette::Text);
     }
     else {
-        QSize textSize = fm.size(Qt::TextSingleLine, d->text());
-        QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, textSize, emptySpace);
+        QRect textRect = fm.boundingRect(emptySpace, (int)d->textAlign | (int)Qt::TextSingleLine, d->text());
 
         // split into 3 part (by elements)
         QMultiSpinBoxData* dataSelected = d->get(d->currentSectionIndex);
         int startIndexSplit = d->textLength(d->currentSectionIndex);
-        QString prePart = d->cachedText.mid(0, startIndexSplit);
-        QString activePart = d->cachedText.mid(startIndexSplit, dataSelected->text.length());
-        QString postPart = d->cachedText.mid(startIndexSplit + dataSelected->text.length());
+        QString prePart = d->text().mid(0, startIndexSplit);
+        QString activePart = d->text().mid(startIndexSplit, dataSelected->text.length());
+        QString postPart = d->text().mid(startIndexSplit + dataSelected->text.length());
 
         // if cursor is in selection
         if (d->cursoPos >= 0) {
-
         }
         // if the all section is selected
         else {
