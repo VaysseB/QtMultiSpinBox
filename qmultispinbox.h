@@ -7,7 +7,7 @@
 
 // /usr/include/qt5/QtWidgets/5.2.1/QtWidgets/private/qwidget_p.h
 #include <private/qwidget_p.h>
-#include <private/qwidget_p.h>
+#include <private/qwidgetlinecontrol_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -142,21 +142,24 @@ public:
     QMultiSpinBoxData* get(int index);
 
 
-    int textLength() const { return cachedText.length(); }
-    QString text() const { return cachedText; }
+    QString text() const { return control->text(); }
+    int textLength() const { return control->text().length(); }
+    int textLength(int count) const;
     void invalidateText();
 
-    int textLength(int count) const;
+
+    void initLineEditControl(QMultiSpinBox* widget);
+
 
 public:
-    QString cachedText;
     Qt::Alignment textAlign;
     int currentSectionIndex; // active section
 
     QString prefix;
     QList<QMultiSpinBoxData*> elementDatas;
 
-    int cursoPos; // character index, related to currentSectionIndex
+    bool cursorVisible;
+    QWidgetLineControl* control;
 };
 
 
