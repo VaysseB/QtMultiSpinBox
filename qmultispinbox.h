@@ -113,6 +113,8 @@ signals:
     void elementCountChanged(int count);
     void currentSectionIndexChanged(int index);
 
+    void editingFinished();
+
 
 protected:
     QMultiSpinBox(QMultiSpinBoxPrivate &dd, QWidget* parent = 0);

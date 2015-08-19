@@ -52,6 +52,11 @@ QMultiSpinBox::QMultiSpinBox(QWidget *parent)
     : QWidget(*new QMultiSpinBoxPrivate, parent, 0)
 {
     setObjectName(QLatin1String("QMultiSpinBox"));
+
+    Q_D(QMultiSpinBox);
+
+    connect(d->control, SIGNAL(updateNeeded(QRect)),
+            this, SLOT(update()));
 }
 
 
@@ -59,6 +64,7 @@ QMultiSpinBox::QMultiSpinBox(QMultiSpinBoxPrivate &dd, QWidget* parent) :
     QWidget(dd, parent, 0)
 {
     setObjectName(QLatin1String("QMultiSpinBox"));
+    qDebug("QMultiSpinBox:private constructor called");
 }
 
 
