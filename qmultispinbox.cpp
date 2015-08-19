@@ -50,12 +50,14 @@ int QMultiSpinBoxData::fullLength() const
 QMultiSpinBox::QMultiSpinBox(QWidget *parent)
     : QWidget(*new QMultiSpinBoxPrivate, parent, 0)
 {
+    setObjectName(QLatin1String("QMultiSpinBox"));
 }
 
 
 QMultiSpinBox::QMultiSpinBox(QMultiSpinBoxPrivate &dd, QWidget* parent) :
     QWidget(dd, parent, 0)
 {
+    setObjectName(QLatin1String("QMultiSpinBox"));
 }
 
 
@@ -111,6 +113,8 @@ void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element, 
     Q_D(QMultiSpinBox);
     d->insert(index, element, suffix);
 
+    updateGeometry();
+    update();
     Q_EMIT elementCountChanged(elementCount());
 }
 
@@ -128,6 +132,8 @@ QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
     Q_D(QMultiSpinBox);
     QScopedPointer<QMultiSpinBoxData> eData(d->take(index));
 
+    updateGeometry();
+    update();
     Q_EMIT elementCountChanged(elementCount());
 
     return eData.data()->element;
@@ -162,6 +168,7 @@ void QMultiSpinBox::setTextAlignement(Qt::Alignment align)
 {
     Q_D(QMultiSpinBox);
     d->textAlign = align;
+    update();
     Q_EMIT textAlignementChanged(align);
 }
 
@@ -179,6 +186,7 @@ void QMultiSpinBox::setCurrentSectionIndex(int index)
         d->currentSectionIndex = -1;
     else
         d->currentSectionIndex = index;
+    update();
     Q_EMIT currentSectionIndexChanged(index);
 }
 
@@ -193,6 +201,7 @@ void QMultiSpinBox::setPrefix(const QString& prefix)
     Q_D(QMultiSpinBox);
     d->prefix = prefix;
     d->invalidateText();
+    update();
 }
 
 QString QMultiSpinBox::suffixOf(int index) const
@@ -208,6 +217,7 @@ void QMultiSpinBox::setSuffixOf(int index, const QString& suffix)
     Q_D(QMultiSpinBox);
     d->elementDatas.value(index)->suffix = suffix;
     d->invalidateText();
+    update();
 }
 
 //------------------------------------------------------------------------------

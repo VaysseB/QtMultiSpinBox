@@ -17,8 +17,13 @@ INCLUDEPATH += "/usr/include/qt5/QtWidgets/5.2.1/QtWidgets"
 
 SOURCES += main.cpp\
         qmultispinbox.cpp \
-    qmultispinboxelements.cpp
+    qmultispinboxelements.cpp \
+    mainwindow.cpp
 
 HEADERS  += qmultispinbox.h \
     qmultispinboxelements.h \
-    QMultiSpinBox
+    QMultiSpinBox \
+    mainwindow.h
+
+FORMS += \
+    mainwindow.ui
