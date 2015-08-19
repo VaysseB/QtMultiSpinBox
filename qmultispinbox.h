@@ -95,7 +95,9 @@ public:
 
 
 public slots:
-    void insertSpinElement(int index, QMultiSpinBoxElement* element, const QString &suffix = QString());
+    void appendSpinElement(QMultiSpinBoxElement* element, const QString &suffix = QString(" "));
+    void insertSpinElement(int index, QMultiSpinBoxElement* element, const QString &suffix = QString(" "));
+    QMultiSpinBoxElement* getSpinElement(int index);
     QMultiSpinBoxElement* takeSpinElement(int index);
     void removeSpinElement(int index);
 
@@ -143,6 +145,7 @@ public:
 
     void insert(int index, QMultiSpinBoxElement* element, const QString &suffix);
     QMultiSpinBoxData* take(int index);
+    QMultiSpinBoxData* get(int index);
 
 
     int textLength() const { return cachedText.length(); }
@@ -159,6 +162,15 @@ public:
     QString prefix;
     QList<QMultiSpinBoxData*> elementDatas;
 };
+
+
+//==============================================================================
+
+
+inline void QMultiSpinBox::appendSpinElement(QMultiSpinBoxElement* element, const QString &suffix)
+{
+    insertSpinElement(elementCount(), element, suffix);
+}
 
 QT_END_NAMESPACE
 

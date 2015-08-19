@@ -141,6 +141,17 @@ QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
 }
 
 
+QMultiSpinBoxElement* QMultiSpinBox::getSpinElement(int index)
+{
+    Q_ASSERT(index >= 0 && index < elementCount());
+
+    Q_D(QMultiSpinBox);
+    QScopedPointer<QMultiSpinBoxData> eData(d->get(index));
+
+    return eData.data()->element;
+}
+
+
 QString QMultiSpinBox::text() const
 {
     Q_D(const QMultiSpinBox);
@@ -452,6 +463,14 @@ QMultiSpinBoxData* QMultiSpinBoxPrivate::take(int index)
 
     return takenElementData;
 }
+
+
+QMultiSpinBoxData* QMultiSpinBoxPrivate::get(int index)
+{
+    // index is valid, element exist
+    return elementDatas.takeAt(index);
+}
+
 
 void QMultiSpinBoxPrivate::invalidateText()
 {
