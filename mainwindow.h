@@ -28,6 +28,7 @@ private slots:
 private:
      void buildRow1() const;
      void buildRow2() const;
+     void buildRow3_4() const;
 
      void firstUpdateForAll();
 

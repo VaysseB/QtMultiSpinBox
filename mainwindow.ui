@@ -76,7 +76,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,1,1,1">
            <item>
             <widget class="QLabel" name="label_5">
              <property name="font">
@@ -100,7 +100,7 @@
               </font>
              </property>
              <property name="text">
-              <string>No intersections</string>
+              <string>Clean</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -130,7 +130,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Suffix</string>
+              <string>Both</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -145,7 +145,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Both</string>
+              <string>Suffix</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -164,7 +164,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1,1,1,1">
          <item>
           <widget class="QLabel" name="label_7">
            <property name="font">
@@ -192,7 +192,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,1,1">
          <item>
           <widget class="QLabel" name="label_8">
            <property name="font">
@@ -216,6 +216,62 @@
          </item>
          <item>
           <widget class="QMultiSpinBox" name="qmspbR2C4" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1,1,1,1">
+         <item>
+          <widget class="QLabel" name="label_11">
+           <property name="font">
+            <font>
+             <italic>true</italic>
+            </font>
+           </property>
+           <property name="text">
+            <string>Two</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR3C1" native="true"/>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR3C2" native="true"/>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR3C3" native="true"/>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR3C4" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,1,1,1">
+         <item>
+          <widget class="QLabel" name="label_12">
+           <property name="font">
+            <font>
+             <italic>true</italic>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR4C1" native="true"/>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR4C2" native="true"/>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR4C3" native="true"/>
+         </item>
+         <item>
+          <widget class="QMultiSpinBox" name="qmspbR4C4" native="true"/>
          </item>
         </layout>
        </item>

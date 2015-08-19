@@ -8,14 +8,22 @@
 class QMultiSpinBoxBinaryElement : public QMultiSpinBoxElement
 {
 public:
-    int minimumInputLength() const { return 8; }
-    int maximumInputLength() const { return 8; }
+    QMultiSpinBoxBinaryElement(int length = 4) {
+        while (--length >= 0)
+            defText.append('0');
+    }
 
-    QString defaultText() const { return QString("00000000"); }
-    bool acceptableChar(const QChar& ch, int) const { return ch.isDigit(); }
+    int minimumInputLength() const { return defText.length(); }
+    int maximumInputLength() const { return defText.length(); }
+
+    QString defaultText() const { return defText; }
+    bool acceptableChar(const QChar& ch, int) const { return ch == QChar('0') || ch == QChar('1'); }
 
     bool extractValue(const QString& text, QVariant& value) const;
     bool displayValue(const QVariant& value, QString& text) const;
+
+private:
+    QString defText;
 };
 
 #endif // QMULTISPINBOXELEMENTS_H
