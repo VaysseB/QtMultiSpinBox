@@ -8,6 +8,21 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignLeft"),     (int)Qt::AlignLeft);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignLeading"),  (int)Qt::AlignLeading);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignRight"),    (int)Qt::AlignRight);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignTrailing"), (int)Qt::AlignTrailing);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignHCenter"),  (int)Qt::AlignHCenter);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignJustify"),  (int)Qt::AlignJustify);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignAbsolute"), (int)Qt::AlignAbsolute);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignTop"),      (int)Qt::AlignTop);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignBottom"),   (int)Qt::AlignBottom);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignVCenter"),  (int)Qt::AlignVCenter);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignBaseline"), (int)Qt::AlignBaseline);
+    ui->comboTextAlign->addItem(QLatin1String("Qt::AlignCenter"),   (int)Qt::AlignCenter);
+    ui->comboTextAlign->setCurrentIndex(ui->comboTextAlign->count()-1);
+
+    //
     buildRow1();
     buildRow2();
 
@@ -17,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkEnable, SIGNAL(clicked()),
             this, SLOT(updateAllWithOptions()));
     connect(ui->spinCurrentSection, SIGNAL(valueChanged(int)),
+            this, SLOT(updateAllWithOptions()));
+    connect(ui->comboTextAlign, SIGNAL(currentIndexChanged(int)),
             this, SLOT(updateAllWithOptions()));
 }
 
@@ -42,7 +59,7 @@ void MainWindow::updateAllWithOptions() const
 {
     foreach(QMultiSpinBox* m, allMultiSpinBox()) {
         m->setEnabled(ui->checkEnable->isChecked());
-        m->setTextAlignement(Qt::AlignCenter);
+        m->setTextAlignement((Qt::Alignment)ui->comboTextAlign->currentData().toInt());
         m->setCurrentSectionIndex(ui->spinCurrentSection->value());
     }
 }
