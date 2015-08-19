@@ -74,13 +74,6 @@ void QMultiSpinBox::clear()
 }
 
 
-void QMultiSpinBox::reset()
-{
-    Q_D(QMultiSpinBox);
-    d->reset();
-}
-
-
 void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element, const QString &suffix)
 {
     Q_ASSERT(index >= 0 && index <= elementCount());
@@ -133,9 +126,17 @@ QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
     Q_D(QMultiSpinBox);
     QScopedPointer<QMultiSpinBoxData> eData(d->take(index));
 
+    bool changeCSI = (d->currentSectionIndex == index);
+    if (changeCSI)
+        d->currentSectionIndex = -1;
+
     updateGeometry();
-    update();
+
     Q_EMIT elementCountChanged(elementCount());
+    if (changeCSI)
+        Q_EMIT currentSectionIndexChanged(d->currentSectionIndex);
+
+    update();
 
     return eData.data()->element;
 }
@@ -183,7 +184,6 @@ void QMultiSpinBox::setTextAlignement(Qt::Alignment align)
     update();
     Q_EMIT textAlignementChanged(align);
 }
-
 
 int QMultiSpinBox::currentSectionIndex() const
 {
@@ -254,69 +254,66 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
             | QAbstractSpinBox::StepDownEnabled;
 
     QRect emptySpace = style()->subControlRect(QStyle::CC_SpinBox,
-                                           &option,
-                                           QStyle::SC_SpinBoxEditField,
-                                           this);
+                                               &option,
+                                               QStyle::SC_SpinBoxEditField,
+                                               this);
 
     // *** Draw ***
     // draw the spinbox frame and buttons
     style()->drawComplexControl(QStyle::CC_SpinBox, &option, &painter, this);
 
-    // if nothing is selected
+    // if nothing is selected AND cursor is away
     if (d->currentSectionIndex < 0) {
-        QSize textSize = fontMetrics().size(Qt::TextSingleLine, d->text());
+//            && d->cursoPos < 0) {
+        QSize textSize = fm.size(Qt::TextSingleLine, d->text());
         QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, textSize, emptySpace);
         style()->drawItemText(&painter, textRect,
                               0, palette(), true,
                               d->text(), QPalette::Text);
     }
     else {
-        QSize sztext = fontMetrics().size(Qt::TextSingleLine, d->text());
-        QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, sztext, emptySpace);
-        int index = 0;
+        QSize textSize = fm.size(Qt::TextSingleLine, d->text());
+        QRect textRect = QStyle::alignedRect(Qt::LeftToRight, d->textAlign, textSize, emptySpace);
 
-        // prefix
-        QSize s = fm.size(Qt::TextSingleLine, d->prefix);
-        style()->drawItemText(&painter, textRect,
-                              0, palette(), true,
-                              d->prefix,
-                              QPalette::Text);
-        textRect.setLeft(textRect.left() + s.width());
+        // split into 3 part (by elements)
+        QMultiSpinBoxData* dataSelected = d->get(d->currentSectionIndex);
+        int startIndexSplit = d->textLength(d->currentSectionIndex);
+        QString prePart = d->cachedText.mid(0, startIndexSplit);
+        QString activePart = d->cachedText.mid(startIndexSplit, dataSelected->text.length());
+        QString postPart = d->cachedText.mid(startIndexSplit + dataSelected->text.length());
 
-        // draw each element
-        foreach(QMultiSpinBoxData* eData, d->elementDatas) {
-            // element content
-            s = fm.size(Qt::TextSingleLine, eData->text);
+        // if cursor is in selection
+        if (d->cursoPos >= 0) {
 
-            // if the element is selected
-            if (d->currentSectionIndex == index++) {
-                painter.fillRect(QRect(textRect.topLeft(), s),
-                                 QBrush(palette().color(QPalette::Highlight)));
-                style()->drawItemText(&painter, textRect,
-                                      0, palette(), true,
-                                      eData->text,
-                                      QPalette::HighlightedText);
-            }
-            // if the element is not selected
-            else {
-                style()->drawItemText(&painter, textRect,
-                                      0, palette(), true,
-                                      eData->text,
-                                      QPalette::Text);
-            }
-
-            textRect.setLeft(textRect.left() + s.width());
-
-
-            // suffix
-            s = fm.size(Qt::TextSingleLine, eData->suffix);
-
+        }
+        // if the all section is selected
+        else {
+            // pre-part
+            textSize = fm.size(Qt::TextSingleLine, prePart);
             style()->drawItemText(&painter, textRect,
                                   0, palette(), true,
-                                  eData->suffix,
+                                  prePart,
                                   QPalette::Text);
+            textRect.setLeft(textRect.left() + textSize.width());
 
-            textRect.setLeft(textRect.left() + s.width());
+            // active part
+            // draw background of hilghlight text
+            textSize = fm.size(Qt::TextSingleLine, activePart);
+            painter.fillRect(QRect(textRect.topLeft(), textSize),
+                             QBrush(palette().color(QPalette::Highlight)));
+            // draw hilghlight text
+            style()->drawItemText(&painter, textRect,
+                                  0, palette(), true,
+                                  activePart,
+                                  QPalette::HighlightedText);
+            textRect.setLeft(textRect.left() + textSize.width());
+
+            // post-part
+            textSize = fm.size(Qt::TextSingleLine, postPart);
+            style()->drawItemText(&painter, textRect,
+                                  0, palette(), true,
+                                  postPart,
+                                  QPalette::Text);
         }
     }
 }
@@ -380,16 +377,12 @@ QMultiSpinBoxPrivate::~QMultiSpinBoxPrivate()
 
 void QMultiSpinBoxPrivate::clear()
 {
+    cursoPos = -1;
     currentSectionIndex = -1;
     cachedText.resize(0);
     prefix.resize(0);
     qDeleteAll(elementDatas);
     elementDatas.clear();
-}
-
-
-void QMultiSpinBoxPrivate::reset()
-{
 }
 
 
@@ -426,7 +419,7 @@ QMultiSpinBoxData* QMultiSpinBoxPrivate::take(int index)
 QMultiSpinBoxData* QMultiSpinBoxPrivate::get(int index)
 {
     // index is valid, element exist
-    return elementDatas.takeAt(index);
+    return elementDatas.value(index);
 }
 
 
@@ -441,6 +434,8 @@ void QMultiSpinBoxPrivate::invalidateText()
 int QMultiSpinBoxPrivate::textLength(int count) const
 {
     int length = 0;
+    if (count >= 0)
+        length += prefix.length();
     foreach(QMultiSpinBoxData* eData, elementDatas) {
         if (count-- <= 0)
             break;

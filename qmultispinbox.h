@@ -70,7 +70,6 @@ public:
 
 
 
-    void reset(); // reset to default state
     void clear(); // reset and remove all elements
 
 
@@ -136,7 +135,6 @@ public:
 
 
     void clear();
-    void reset();
 
 
     void insert(int index, QMultiSpinBoxElement* element, const QString &suffix);
@@ -153,10 +151,12 @@ public:
 public:
     QString cachedText;
     Qt::Alignment textAlign;
-    int currentSectionIndex;
+    int currentSectionIndex; // active section
 
     QString prefix;
     QList<QMultiSpinBoxData*> elementDatas;
+
+    int cursoPos; // character index, related to currentSectionIndex
 };
 
 
@@ -167,6 +167,7 @@ inline void QMultiSpinBox::appendSpinElement(QMultiSpinBoxElement* element, cons
 {
     insertSpinElement(elementCount(), element, suffix);
 }
+
 
 QT_END_NAMESPACE
 
