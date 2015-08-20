@@ -3,18 +3,8 @@
 #include <QStyleOptionSpinBox>
 #include <QDebug>
 
+#include "qmultispinboxelements.h"
 
-QMultiSpinBoxElement::QMultiSpinBoxElement()
-{
-}
-
-
-QMultiSpinBoxElement::~QMultiSpinBoxElement()
-{
-}
-
-
-//==============================================================================
 
 
 QMultiSpinBoxData::QMultiSpinBoxData(QMultiSpinBoxElement* element,
@@ -86,6 +76,7 @@ void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element, 
     Q_ASSERT(element != NULL);
 
     Q_ASSERT(element->minimumInputLength() <= element->maximumInputLength());
+    Q_ASSERT(element->minimumInputLength() > 0);
 
     const QString defaultText = element->defaultText();
     Q_ASSERT(defaultText.length() <= element->maximumInputLength());

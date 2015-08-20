@@ -1,6 +1,20 @@
 #include "qmultispinboxelements.h"
 
 
+
+QMultiSpinBoxElement::QMultiSpinBoxElement()
+{
+}
+
+
+QMultiSpinBoxElement::~QMultiSpinBoxElement()
+{
+}
+
+
+//==============================================================================
+
+
 bool QMultiSpinBoxBinaryElement::extractValue(const QString& text, QVariant& value) const
 {
     bool ok = true;

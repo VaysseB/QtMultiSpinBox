@@ -1,8 +1,28 @@
 #ifndef QMULTISPINBOXELEMENTS_H
 #define QMULTISPINBOXELEMENTS_H
 
-#include <QMultiSpinBox>
+#include <QString>
+#include <QVariant>
 
+
+class QMultiSpinBoxElement
+{
+public:
+    explicit QMultiSpinBoxElement();
+    virtual ~QMultiSpinBoxElement();
+
+    virtual int minimumInputLength() const = 0; // exclude prefix and suffix
+    virtual int maximumInputLength() const = 0;
+
+    virtual QString defaultText() const = 0; // return string (min <= len <= max)
+    virtual bool acceptableChar(const QChar& ch, int pos = -1) const = 0; // exclude prefix and suffix (-1 for general)
+
+    virtual bool extractValue(const QString& text, QVariant& value) const = 0; // true if value is extractable
+    virtual bool displayValue(const QVariant& value, QString& text) const = 0; // true if value is displayable
+};
+
+
+//==============================================================================
 
 
 class QMultiSpinBoxBinaryElement : public QMultiSpinBoxElement
