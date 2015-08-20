@@ -28,12 +28,14 @@ public:
     int fullLength() const;
     QString fullText() const;
 
+    int length() const;
+    QString text() const;
+
     QMultiSpinBoxElement* element;
     QString suffix;
 
     int startIndex; // without prefix nor suffix
-
-    QString text;
+    QString currentText;
 };
 
 
@@ -98,11 +100,15 @@ signals:
     void elementCountChanged(int count);
     void currentSectionIndexChanged(int index);
 
-    void editingFinished();
+    void editingFinished(int index);
 
 
 protected:
     QMultiSpinBox(QMultiSpinBoxPrivate &dd, QWidget* parent = 0);
+
+
+private slots:
+    void sectionEditingFinished();
 
 
 private:

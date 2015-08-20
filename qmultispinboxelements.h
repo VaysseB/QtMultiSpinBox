@@ -3,22 +3,20 @@
 
 #include <QString>
 #include <QVariant>
+#include <QValidator>
 
 
-class QMultiSpinBoxElement
+class QMultiSpinBoxElement :
+        public QValidator
 {
+    Q_OBJECT
 public:
-    explicit QMultiSpinBoxElement();
+    explicit QMultiSpinBoxElement(QObject *parent = 0);
     virtual ~QMultiSpinBoxElement();
 
-    virtual int minimumInputLength() const = 0; // exclude prefix and suffix
-    virtual int maximumInputLength() const = 0;
-
-    virtual QString defaultText() const = 0; // return string (min <= len <= max)
-    virtual bool acceptableChar(const QChar& ch, int pos = -1) const = 0; // exclude prefix and suffix (-1 for general)
-
+    virtual QVariant defaultValue() const = 0;
     virtual bool extractValue(const QString& text, QVariant& value) const = 0; // true if value is extractable
-    virtual bool displayValue(const QVariant& value, QString& text) const = 0; // true if value is displayable
+    virtual bool convertString(const QVariant& value, QString& text) const = 0; // true if value is displayable
 };
 
 
@@ -28,19 +26,10 @@ public:
 class QMultiSpinBoxBinaryElement : public QMultiSpinBoxElement
 {
 public:
-    QMultiSpinBoxBinaryElement(int length = 4) {
-        while (--length >= 0)
-            defText.append('0');
-    }
-
-    int minimumInputLength() const { return defText.length(); }
-    int maximumInputLength() const { return defText.length(); }
-
-    QString defaultText() const { return defText; }
-    bool acceptableChar(const QChar& ch, int) const { return ch == QChar('0') || ch == QChar('1'); }
-
+    QVariant defaultValue() const { return QVariant(10); }
     bool extractValue(const QString& text, QVariant& value) const;
-    bool displayValue(const QVariant& value, QString& text) const;
+    bool convertString(const QVariant& value, QString& text) const;
+    QValidator::State validate(QString &text, int &pos) const;
 
 private:
     QString defText;

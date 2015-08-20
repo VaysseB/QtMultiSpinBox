@@ -12,8 +12,14 @@ QMultiSpinBoxData::QMultiSpinBoxData(QMultiSpinBoxElement* element,
     element(element),
     suffix(suffix),
     startIndex(-1),
-    text(element->defaultText())
+    currentText()
 {
+    if (!element->convertString(element->defaultValue(), currentText)) {
+        currentText.clear();
+        qWarning("QMultiSpinBoxElement:  convert to string the default value return false (not logical)");
+    }
+    else
+        currentText = currentText.simplified();
 }
 
 
@@ -26,13 +32,22 @@ void QMultiSpinBoxData::shiftRight(int offset)
 
 QString QMultiSpinBoxData::fullText() const
 {
-    return text + suffix;
+    return currentText + suffix;
 }
-
 
 int QMultiSpinBoxData::fullLength() const
 {
-    return text.length() + suffix.length();
+    return currentText.length() + suffix.length();
+}
+
+QString QMultiSpinBoxData::text() const
+{
+    return currentText;
+}
+
+int QMultiSpinBoxData::length() const
+{
+    return currentText.length();
 }
 
 //==============================================================================
@@ -47,6 +62,10 @@ QMultiSpinBox::QMultiSpinBox(QWidget *parent)
 
     connect(d->control, SIGNAL(updateNeeded(QRect)),
             this, SLOT(update()));
+    connect(d->control, SIGNAL(updateMicroFocus()),
+            this, SLOT(updateMicroFocus()));
+    connect(d->control, SIGNAL(editingFinished()),
+            this, SLOT(sectionEditingFinished()));
 }
 
 
@@ -75,32 +94,6 @@ void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element, 
     Q_ASSERT(index >= 0 && index <= elementCount());
     Q_ASSERT(element != NULL);
 
-    Q_ASSERT(element->minimumInputLength() <= element->maximumInputLength());
-    Q_ASSERT(element->minimumInputLength() > 0);
-
-    const QString defaultText = element->defaultText();
-    Q_ASSERT(defaultText.length() <= element->maximumInputLength());
-    Q_ASSERT(defaultText.length() >= element->minimumInputLength());
-
-    Q_ASSERT_X(!element->acceptableChar(QChar(QChar::Null)),
-               "QMultiSpinBox::insertSpinElement",
-               "null character is not acceptable");
-    Q_ASSERT_X(!element->acceptableChar(QChar(QChar::Tabulation)),
-               "QMultiSpinBox::insertSpinElement",
-               "tabulation character is not acceptable");
-    Q_ASSERT_X(!element->acceptableChar(QChar(QChar::LineFeed)),
-               "QMultiSpinBox::insertSpinElement",
-               "line feed character is not acceptable");
-    Q_ASSERT_X(!element->acceptableChar(QChar(QChar::CarriageReturn)),
-               "QMultiSpinBox::insertSpinElement",
-               "carriage return character is not acceptable");
-    Q_ASSERT_X(!element->acceptableChar(QChar(QChar::Space)),
-               "QMultiSpinBox::insertSpinElement",
-               "space character is not acceptable");
-    Q_ASSERT_X(!element->acceptableChar(QChar(QChar::Nbsp)),
-               "QMultiSpinBox::insertSpinElement",
-               "non-breaking space character is not acceptable");
-
     Q_D(QMultiSpinBox);
     d->insert(index, element, suffix);
 
@@ -109,12 +102,10 @@ void QMultiSpinBox::insertSpinElement(int index, QMultiSpinBoxElement* element, 
     Q_EMIT elementCountChanged(elementCount());
 }
 
-
 void QMultiSpinBox::removeSpinElement(int index)
 {
     delete takeSpinElement(index);
 }
-
 
 QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
 {
@@ -137,7 +128,6 @@ QMultiSpinBoxElement* QMultiSpinBox::takeSpinElement(int index)
 
     return eData.data()->element;
 }
-
 
 QMultiSpinBoxElement* QMultiSpinBox::getSpinElement(int index)
 {
@@ -191,10 +181,24 @@ int QMultiSpinBox::currentSectionIndex() const
 void QMultiSpinBox::setCurrentSectionIndex(int index)
 {
     Q_D(QMultiSpinBox);
-    if (index < 0 || index >= elementCount())
+    if (elementCount() <= 0)
         d->currentSectionIndex = -1;
-    else
-        d->currentSectionIndex = index;
+    else {
+        if (index < 0 || index >= elementCount())
+            d->currentSectionIndex = 0;
+        else
+            d->currentSectionIndex = index;
+
+        // check cursor!
+        int lIndex = d->get(d->currentSectionIndex)->startIndex;
+        int rIndex = lIndex + d->get(d->currentSectionIndex)->length();
+
+        // cursor out if section -> invalidate
+        if (d->control->cursorPosition() < lIndex
+                || d->control->cursorPosition() > rIndex)
+            d->control->setCursorPosition(-1);
+    }
+
     update();
     Q_EMIT currentSectionIndexChanged(index);
 }
@@ -318,6 +322,17 @@ QSize QMultiSpinBox::minimumSizeHint() const
 }
 
 
+//------------------------------------------------------------------------------
+
+
+void QMultiSpinBox::sectionEditingFinished()
+{
+    Q_D(QMultiSpinBox);
+    Q_ASSERT_X(d->currentSectionIndex >= 0, "editing", "control claims to finished editing but no section is active");
+    Q_EMIT editingFinished(d->currentSectionIndex);
+}
+
+
 //==============================================================================
 
 
@@ -342,7 +357,6 @@ QMultiSpinBoxPrivate::~QMultiSpinBoxPrivate()
 
 void QMultiSpinBoxPrivate::clear()
 {
-    control->setMaxLength(0);
     control->setCursorPosition(-1);
     control->setText(QString());
 
@@ -397,10 +411,11 @@ QMultiSpinBoxData* QMultiSpinBoxPrivate::get(int index)
 
 void QMultiSpinBoxPrivate::invalidateText()
 {
+    control->setCursorPosition(-1);
+    control->removeSelection();
     QString t = prefix;
     foreach(QMultiSpinBoxData* eData, elementDatas)
         t.append(eData->fullText());
-    control->setMaxLength(t.length()+1); // just is case
     control->setText(t);
 }
 

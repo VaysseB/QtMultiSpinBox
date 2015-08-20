@@ -2,7 +2,8 @@
 
 
 
-QMultiSpinBoxElement::QMultiSpinBoxElement()
+QMultiSpinBoxElement::QMultiSpinBoxElement(QObject* parent) :
+    QValidator(parent)
 {
 }
 
@@ -22,11 +23,21 @@ bool QMultiSpinBoxBinaryElement::extractValue(const QString& text, QVariant& val
     return ok;
 }
 
-bool QMultiSpinBoxBinaryElement::displayValue(const QVariant& value, QString& text) const
+bool QMultiSpinBoxBinaryElement::convertString(const QVariant& value, QString& text) const
 {
     bool ok = true;
     int iv = value.toInt(&ok);
     if (ok)
         text = QString::number(iv, 2);
     return ok;
+}
+
+QValidator::State QMultiSpinBoxBinaryElement::validate(QString &text, int &pos) const
+{
+    Q_UNUSED(pos)
+    bool ok = true;
+    text.toInt(&ok);
+    if (ok)
+        return QValidator::Acceptable;
+    return QValidator::Invalid;
 }
