@@ -278,6 +278,7 @@ void QMultiSpinBox::paintEvent(QPaintEvent *paintEvent)
     else if (d->control->hasSelectedText())
         textDrawFlags |= QWidgetLineControl::DrawSelections;
 
+    painter.setPen(palette().text().color());
     d->control->draw(&painter, textRect.topLeft(), textRect, textDrawFlags);
 }
 
