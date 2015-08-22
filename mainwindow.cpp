@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
     buildRow3_4();
     buildRow5();
     buildRow6();
+    buildRow7();
 
     firstUpdateForAll();
     updateAllWithOptions();
@@ -146,12 +147,22 @@ void MainWindow::buildRow5() const
 void MainWindow::buildRow6() const
 {
     ui->multispinAttitudes->setPrefix("Yaw=");
-    ui->multispinAttitudes->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("  Pitch="));
-    ui->multispinAttitudes->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("  Roll="));
-    ui->multispinAttitudes->appendSpinElement(new QtIntMultiSpinBoxElement);
+    ui->multispinAttitudes->appendSpinElement(new QtDoubleMultiSpinBoxElement, QLatin1String("  Pitch="));
+    ui->multispinAttitudes->appendSpinElement(new QtDoubleMultiSpinBoxElement, QLatin1String("  Roll="));
+    ui->multispinAttitudes->appendSpinElement(new QtDoubleMultiSpinBoxElement);
 
-    ui->multispinAttitudes->setValue(1 /*pitch*/, -90);
-    ui->multispinAttitudes->setText(0 /*yaw*/, "180");
+    ui->multispinAttitudes->setValue(1 /*pitch*/, -90.0);
+    ui->multispinAttitudes->setText(0 /*yaw*/, "180"); // /!\ comma and point, see QDoubleValidator
+}
+
+void MainWindow::buildRow7() const
+{
+    ui->multispinIncr->setPrefix("3D pos=");
+    ui->multispinIncr->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("  Attitudes="));
+    ui->multispinIncr->appendSpinElement(new QtDoubleMultiSpinBoxElement);
+
+    ui->multispinIncr->setValue(0, 1);
+    ui->multispinIncr->setValue(1, 1.0);
 }
 
 void MainWindow::on_multispinPos3D_editingFinished()
@@ -163,7 +174,19 @@ void MainWindow::on_multispinPos3D_editingFinished()
 
 void MainWindow::on_multispinAttitudes_editingFinished()
 {
-    qDebug() << "editingFinished() on Attitudes, yaw=" << ui->multispinAttitudes->value(0).toInt()
-                << ", pitch=" << ui->multispinAttitudes->value(1).toInt()
-                << ", roll=" << ui->multispinAttitudes->value(2).toInt();
+    qDebug() << "editingFinished() on Attitudes, yaw=" << ui->multispinAttitudes->value(0).toDouble()
+                << ", pitch=" << ui->multispinAttitudes->value(1).toDouble()
+                << ", roll=" << ui->multispinAttitudes->value(2).toDouble();
+}
+
+void MainWindow::on_multispinIncr_editingFinished()
+{
+    for (int i=0; i < ui->multispinPos3D->count(); i++) {
+         QtIntMultiSpinBoxElement* e = static_cast<QtIntMultiSpinBoxElement*>(ui->multispinPos3D->getSpinElement(i));
+         e->setStepIncrement(ui->multispinIncr->value(0).toInt());
+    }
+    for (int i=0; i < ui->multispinAttitudes->count(); i++) {
+         QtDoubleMultiSpinBoxElement* e = static_cast<QtDoubleMultiSpinBoxElement*>(ui->multispinAttitudes->getSpinElement(i));
+         e->setStepIncrement(ui->multispinIncr->value(1).toDouble());
+    }
 }

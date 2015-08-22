@@ -27,6 +27,7 @@ private slots:
 
      void on_multispinPos3D_editingFinished();
      void on_multispinAttitudes_editingFinished();
+     void on_multispinIncr_editingFinished();
 
 private:
      void buildRow1() const;
@@ -34,6 +35,7 @@ private:
      void buildRow3_4() const;
      void buildRow5() const;
      void buildRow6() const;
+     void buildRow7() const;
 
      void firstUpdateForAll();
 

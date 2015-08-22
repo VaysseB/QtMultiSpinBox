@@ -45,6 +45,8 @@ class QtIntMultiSpinBoxElement :
         public QtMultiSpinBoxValidatorWrapper<QIntValidator>
 {
     Q_OBJECT
+    Q_PROPERTY(int stepIncrement READ stepIncrement WRITE setStepIncrement)
+
 public:
     explicit QtIntMultiSpinBoxElement(QObject * parent = 0);
     QtIntMultiSpinBoxElement(int bottom, int top, QObject *parent = 0);
@@ -53,6 +55,35 @@ public:
     QVariant valueFromText(const QString &text) const;
     QString textFromValue(const QVariant &value) const;
     QVariant stepBy(const QVariant &value, int steps);
+
+    void setStepIncrement(int incr) { m_stepIncr = incr; }
+    int stepIncrement() const { return m_stepIncr; }
+
+private:
+    int m_stepIncr;
+};
+
+
+class QtDoubleMultiSpinBoxElement :
+        public QtMultiSpinBoxValidatorWrapper<QDoubleValidator>
+{
+    Q_OBJECT
+    Q_PROPERTY(int stepIncrement READ stepIncrement WRITE setStepIncrement)
+
+public:
+    explicit QtDoubleMultiSpinBoxElement(QObject* parent = 0);
+    QtDoubleMultiSpinBoxElement(double bottom, double top, int decimals, QObject *parent = 0);
+
+    QVariant defaultValue() const { return QVariant((double)0.0); }
+    QVariant valueFromText(const QString &text) const;
+    QString textFromValue(const QVariant &value) const;
+    QVariant stepBy(const QVariant &value, int steps);
+
+    void setStepIncrement(double incr) { m_stepIncr = incr; }
+    double stepIncrement() const { return m_stepIncr; }
+
+private:
+    double m_stepIncr;
 };
 
 
