@@ -56,7 +56,7 @@ public:
     int count() const;
     int currentSectionIndex() const;
     QString prefix() const;
-    QString suffixOf(int index) const; // between (index, index+1)
+    QString suffix(int index) const; // between (index, index+1)
 
 
 
@@ -70,7 +70,7 @@ public Q_SLOTS:
 
     void setCurrentSectionIndex(int index); // if not valid, set -1
     void setPrefix(const QString& prefix);
-    void setSuffixOf(int index, const QString& suffix);
+    void setSuffix(int index, const QString& suffix);
 
 
 

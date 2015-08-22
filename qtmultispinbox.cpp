@@ -164,19 +164,31 @@ void QtMultiSpinBox::setPrefix(const QString& prefix)
     lineEdit()->setText(text);
 }
 
-QString QtMultiSpinBox::suffixOf(int index) const
+QString QtMultiSpinBox::suffix(int index) const
 {
     Q_ASSERT(index >= 0 && index < count());
     Q_D(const QtMultiSpinBox);
     return d->elementDatas.value(index)->suffix;
 }
 
-void QtMultiSpinBox::setSuffixOf(int index, const QString& suffix)
+void QtMultiSpinBox::setSuffix(int index, const QString& suffix)
 {
     Q_ASSERT(index >= 0 && index < count());
+
     Q_D(QtMultiSpinBox);
-    d->elementDatas.value(index)->suffix = suffix;
-    //  TODO: update text
+    QString& elementSuffix(d->elementDatas.value(index)->suffix);
+    QString newSuffix = d->simplify(suffix);
+
+    QString text = lineEdit()->text();
+    int startIndexElement = d->textIndex(text, index+1) - elementSuffix.length();
+    Q_ASSERT(startIndexElement >= 0);
+
+    // replacing text
+    text.replace(startIndexElement, elementSuffix.length(), newSuffix);
+
+    // change
+    elementSuffix = newSuffix;
+    lineEdit()->setText(text);
 }
 
 
@@ -357,8 +369,11 @@ int QtMultiSpinBoxPrivate::textIndex(const QString& text, int indexElement) cons
         }
         else {
             // this must be the last one
-            if (!(i+1 == indexElement && indexElement+1 == elementDatas.count()))
+            if (i+1 == indexElement && indexElement == elementDatas.count())
+                index = text.length();
+            else
                 index = -1;
+            break;
         }
     }
     return index;
