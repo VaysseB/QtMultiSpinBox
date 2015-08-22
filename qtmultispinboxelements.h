@@ -17,6 +17,7 @@ public:
     virtual QVariant defaultValue() const = 0;
     virtual QVariant valueFromText(const QString &text) const = 0;
     virtual QString textFromValue(const QVariant &value) const = 0;
+    virtual QVariant stepBy(const QVariant &value, int steps) = 0;
 
     virtual QValidator::State validate(QString &, int &) const = 0;
     virtual void fixup(QString &) const {}
@@ -51,6 +52,7 @@ public:
     QVariant defaultValue() const { return QVariant((int)0); }
     QVariant valueFromText(const QString &text) const;
     QString textFromValue(const QVariant &value) const;
+    QVariant stepBy(const QVariant &value, int steps);
 };
 
 

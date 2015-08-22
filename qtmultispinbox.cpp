@@ -16,6 +16,16 @@
 #endif
 
 
+QT_BEGIN_NAMESPACE
+
+template <typename T>
+bool qIsBetweenEqual(T min, T max, T value)
+{
+    return (min == value || min < value)
+            && (value == max || value < max);
+}
+
+
 
 QtMultiSpinBoxData::QtMultiSpinBoxData(QtMultiSpinBoxElement* element,
                                        const QString& suffix) :
@@ -192,6 +202,41 @@ void QtMultiSpinBox::setSuffix(int index, const QString& suffix)
 }
 
 
+//-----------------------------------------------------------------------------
+
+
+QAbstractSpinBox::StepEnabled QtMultiSpinBox::stepEnabled() const
+{
+    if (isEmpty())
+        return 0;
+    return QAbstractSpinBox::StepUpEnabled | QAbstractSpinBox::StepDownEnabled;
+}
+
+void QtMultiSpinBox::stepBy(int steps)
+{
+    Q_D(QtMultiSpinBox);
+    if (d->currentSectionIndex >= 0) {
+        QtMultiSpinBoxElement* e = d->get(d->currentSectionIndex)->element;
+        QString s = d->textAt(text(), d->currentSectionIndex);
+        QVariant v = e->valueFromText(s);
+        v = e->stepBy(v, steps);
+        s = e->textFromValue(v);
+        d->changeText(lineEdit(), d->setTextAt(text(), d->currentSectionIndex, s));
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+void QtMultiSpinBox::focusInEvent(QFocusEvent* event)
+{
+    Q_D(QtMultiSpinBox);
+    d->_q_cursorPositionChanged(0, lineEdit()->cursorPosition());
+    QAbstractSpinBox::focusInEvent(event);
+}
+
+
 //==============================================================================
 
 
@@ -203,6 +248,8 @@ QtMultiSpinBoxPrivate::QtMultiSpinBoxPrivate(QtMultiSpinBox *s) :
     Q_Q(QtMultiSpinBox);
     q->connect(q, SIGNAL(editingFinished()),
                q, SLOT(_q_sectionEditingFinished()));
+    q->connect(q->lineEdit(), SIGNAL(cursorPositionChanged(int,int)),
+               q, SLOT(_q_cursorPositionChanged(int,int)));
 }
 
 
@@ -248,6 +295,7 @@ void QtMultiSpinBoxPrivate::insert(int index, QtMultiSpinBoxElement* element, co
     text.insert(startIndexElement, defaultText.simplified() + newElement->suffix);
     QMSBDEBUG(DBG_LEVEL_INSERT) << "final text" << text;
     q->lineEdit()->setText(text);
+    q->lineEdit()->setCursorPosition(startIndexElement);
 }
 
 
@@ -268,6 +316,7 @@ QtMultiSpinBoxData* QtMultiSpinBoxPrivate::take(int index)
     // removing text
     text.remove(startIndexElement, endIndexElement - startIndexElement);
     q->lineEdit()->setText(text);
+    q->lineEdit()->setCursorPosition(0);
 
     return takenElementData;
 }
@@ -294,18 +343,24 @@ void QtMultiSpinBoxPrivate::_q_sectionEditingFinished()
 void QtMultiSpinBoxPrivate::_q_cursorPositionChanged(int, int new_)
 {
     Q_Q(QtMultiSpinBox);
-    QList<int> splitPos;
-    Q_ASSERT(checkAndSplit(q->text(), splitPos));
-    int indexSplit = -1; // default is invalid
-    if (elementDatas.count() <= 0) {
-        indexSplit = 0; // default in prefix (doesn't matter)
-        while (indexSplit < splitPos.count()
-               && new_ > splitPos.value(indexSplit))
-            indexSplit++;
-        // it must have found it (even in suffix)
-        Q_ASSERT(indexSplit < splitPos.count());
+    QList<QStringRef> splits;
+    Q_ASSERT(checkAndSplit(q->text(), splits));
+    qDebug() << "\n_q_cursorPositionChanged" << q->text() << new_;
+    int indexSplit = 0; // default is invalid
+    bool ok = false;
+    while (indexSplit < splits.count() && !ok) {
+        QStringRef r = splits.value(indexSplit);
+        qDebug() << indexSplit << "/" << splits.count() << " = [" << r.position() << ";" << (r.position() + r.length()) << "]";
+        ok = qIsBetweenEqual(r.position(), r.position() + r.length(), new_);
+        indexSplit++;
     }
+    if (!ok)
+        indexSplit = -1;
+    else
+        indexSplit--;
+    // it can not found it (because it exclude prefix and suffixes)
     if (currentSectionIndex != indexSplit) {
+        qDebug() << "currentSectionIndexChanged" << currentSectionIndex << "-->" << indexSplit;
         currentSectionIndex = indexSplit;
         Q_EMIT q->currentSectionIndexChanged(currentSectionIndex);
     }
@@ -374,34 +429,6 @@ bool QtMultiSpinBoxPrivate::checkAndSplit(const QString& input, QList<QStringRef
     return (it == elementDatas.constEnd() && r.length() == 0);
 }
 
-bool QtMultiSpinBoxPrivate::checkAndSplit(const QString& input, QList<int>& result) const
-{
-    int index = 0;
-    if (!prefix.isEmpty()) {
-        if (!input.startsWith(prefix, Qt::CaseSensitive))
-            return false;
-        index = prefix.length();
-    }
-    QList<QtMultiSpinBoxData*>::const_iterator it;
-    for (it = elementDatas.constBegin(); it != elementDatas.constEnd() && index >= 0; ++it) {
-        if (!(*it)->suffix.isEmpty()) {
-            index = input.indexOf((*it)->suffix, index, Qt::CaseSensitive);
-            if (index >= 0) {
-                result.append(index);
-                index += (*it)->suffix.length();
-            }
-        }
-        else {
-            // this should be the last one
-            result.append(index);
-            index = input.length();
-            ++it;
-            break;
-        }
-    }
-    return (it == elementDatas.constEnd() && index == input.length());
-}
-
 int QtMultiSpinBoxPrivate::textIndex(const QString& text, int indexElement) const
 {
     int index = 0;
@@ -467,3 +494,29 @@ void QtMultiSpinBoxPrivate::fixup(QString &) const
 {
 
 }
+
+QString QtMultiSpinBoxPrivate::textAt(const QString& input, int index) const
+{
+    QList<QStringRef> splits;
+    Q_ASSERT(checkAndSplit(input, splits));
+    Q_ASSERT(index >= 0 && index < splits.count());
+    return splits.value(index).toString();
+}
+
+QString QtMultiSpinBoxPrivate::setTextAt(const QString& input, int index, const QString &text) const
+{
+    QList<QStringRef> splits;
+    Q_ASSERT(checkAndSplit(input, splits));
+    Q_ASSERT(index >= 0 && index < splits.count());
+    QStringRef r = splits.value(index);
+    return QString(input).replace(r.position(), r.length(), text);
+}
+
+void QtMultiSpinBoxPrivate::changeText(QLineEdit* edit, const QString& text) const
+{
+    int pos = edit->cursorPosition();
+    edit->setText(text);
+    edit->setCursorPosition(pos);
+}
+
+QT_END_NAMESPACE

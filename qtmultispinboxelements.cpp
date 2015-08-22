@@ -28,3 +28,12 @@ QString QtIntMultiSpinBoxElement::textFromValue(const QVariant &value) const
         return QString::number(v);
     return QString();
 }
+
+QVariant QtIntMultiSpinBoxElement::stepBy(const QVariant &value, int steps)
+{
+    bool ok = true;
+    int v = value.toInt(&ok);
+    if (ok)
+        return QVariant(v+steps);
+    return QVariant();
+}

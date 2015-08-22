@@ -59,6 +59,10 @@ public:
     QString suffix(int index) const; // between (index, index+1)
 
 
+    StepEnabled stepEnabled() const;
+    void stepBy(int steps);
+
+
 
 public Q_SLOTS:
     void appendSpinElement(QtMultiSpinBoxElement* element, const QString &suffix = QString());
@@ -82,6 +86,7 @@ Q_SIGNALS:
 protected:
     QtMultiSpinBox(QAbstractSpinBoxPrivate &dd, QWidget *parent = 0);
 
+    void focusInEvent(QFocusEvent* event);
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_sectionEditingFinished())
@@ -127,9 +132,15 @@ public:
 
     int textIndex(const QString &text, int indexElement) const;
     bool checkAndSplit(const QString &input, QList<QStringRef> &result) const; // chunk of text (no prefix no suffix)
-    bool checkAndSplit(const QString &input, QList<int> &result) const; // start index of text (no prefix but suffix)
     QValidator::State validate(QString &text, int &pos) const;
     void fixup(QString &) const;
+
+    QString textAt(const QString& input, int index) const;
+    QString setTextAt(const QString& input, int index, const QString &text) const;
+
+
+    void changeText(QLineEdit* edit, const QString& text) const;
+
 
 
 public:
