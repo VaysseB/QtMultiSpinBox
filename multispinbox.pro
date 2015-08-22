@@ -11,9 +11,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = multispinbox
 TEMPLATE = app
 
-INCLUDEPATH += "/usr/include/qt5/QtCore/5.2.1/QtCore"
-INCLUDEPATH += "/usr/include/qt5/QtGui/5.2.1/QtGui"
-INCLUDEPATH += "/usr/include/qt5/QtWidgets/5.2.1/QtWidgets"
 
 SOURCES += main.cpp\
     mainwindow.cpp \

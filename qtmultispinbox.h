@@ -5,11 +5,8 @@
 #include <QWidget>
 #include <QAbstractSpinBox>
 
-// /usr/include/qt5/QtWidgets/5.2.1/QtWidgets/private/qwidget_p.h
-#include <private/qabstractspinbox_p.h>
-
 #ifdef QT_NO_VALIDATOR
-#error QtMultiSpinBox needs validator
+#error QtMultiSpinBox require validator
 #endif
 
 

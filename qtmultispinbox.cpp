@@ -1,8 +1,10 @@
 #include "qtmultispinbox.h"
 
+#include <QLineEdit>
 #include <QDebug>
 
 #include "qtmultispinboxelements.h"
+
 
 #define DBG_LEVEL_VALIDATE      1
 #define DBG_LEVEL_CHECKANDSPLIT 2
