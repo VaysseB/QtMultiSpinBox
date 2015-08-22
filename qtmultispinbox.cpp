@@ -46,6 +46,7 @@ QtMultiSpinBox::QtMultiSpinBox(QWidget *parent) :
     setObjectName(QLatin1String("QtMultiSpinBox"));
 
     lineEdit()->setValidator(d_func());
+    setAlignment(Qt::AlignCenter);
 }
 
 QtMultiSpinBox::QtMultiSpinBox(QAbstractSpinBoxPrivate &dd, QWidget *parent) :
