@@ -286,11 +286,34 @@ QtMultiSpinBoxData* QtMultiSpinBoxPrivate::get(int index)
 void QtMultiSpinBoxPrivate::_q_sectionEditingFinished()
 {
     Q_Q(QtMultiSpinBox);
-    //    Q_ASSERT_X(currentSectionIndex >= 0, "editing", "editingfinished but no section is active");
-    Q_EMIT q->editingFinished(currentSectionIndex);
+    if (currentSectionIndex >= 0)
+        Q_EMIT q->editingFinished(currentSectionIndex);
 }
 
+
+void QtMultiSpinBoxPrivate::_q_cursorPositionChanged(int, int new_)
+{
+    Q_Q(QtMultiSpinBox);
+    QList<int> splitPos;
+    Q_ASSERT(checkAndSplit(q->text(), splitPos));
+    int indexSplit = -1; // default is invalid
+    if (elementDatas.count() <= 0) {
+        indexSplit = 0; // default in prefix (doesn't matter)
+        while (indexSplit < splitPos.count()
+               && new_ > splitPos.value(indexSplit))
+            indexSplit++;
+        // it must have found it (even in suffix)
+        Q_ASSERT(indexSplit < splitPos.count());
+    }
+    if (currentSectionIndex != indexSplit) {
+        currentSectionIndex = indexSplit;
+        Q_EMIT q->currentSectionIndexChanged(currentSectionIndex);
+    }
+}
+
+
 //-----------------------------------------------------------------------------
+
 
 QString QtMultiSpinBoxPrivate::simplify(const QString& text) const
 {
@@ -310,8 +333,9 @@ QString QtMultiSpinBoxPrivate::simplify(const QString& text) const
     return s;
 }
 
+
 //-----------------------------------------------------------------------------
-// validation
+// text handles
 
 
 bool QtMultiSpinBoxPrivate::checkAndSplit(const QString& input, QList<QStringRef>& result) const
@@ -348,6 +372,34 @@ bool QtMultiSpinBoxPrivate::checkAndSplit(const QString& input, QList<QStringRef
     }
     QMSBDEBUG(DBG_LEVEL_CHECKANDSPLIT) << "checkAndSplit: result for" << input << (bool)(it == elementDatas.constEnd() && r.length() == 0);
     return (it == elementDatas.constEnd() && r.length() == 0);
+}
+
+bool QtMultiSpinBoxPrivate::checkAndSplit(const QString& input, QList<int>& result) const
+{
+    int index = 0;
+    if (!prefix.isEmpty()) {
+        if (!input.startsWith(prefix, Qt::CaseSensitive))
+            return false;
+        index = prefix.length();
+    }
+    QList<QtMultiSpinBoxData*>::const_iterator it;
+    for (it = elementDatas.constBegin(); it != elementDatas.constEnd() && index >= 0; ++it) {
+        if (!(*it)->suffix.isEmpty()) {
+            index = input.indexOf((*it)->suffix, index, Qt::CaseSensitive);
+            if (index >= 0) {
+                result.append(index);
+                index += (*it)->suffix.length();
+            }
+        }
+        else {
+            // this should be the last one
+            result.append(index);
+            index = input.length();
+            ++it;
+            break;
+        }
+    }
+    return (it == elementDatas.constEnd() && index == input.length());
 }
 
 int QtMultiSpinBoxPrivate::textIndex(const QString& text, int indexElement) const
