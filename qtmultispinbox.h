@@ -49,6 +49,7 @@ public:
 
 
     void clear(); // reset and remove all elements
+    QString text() const;
 
 
 
@@ -57,6 +58,8 @@ public:
     int currentSectionIndex() const;
     QString prefix() const;
     QString suffix(int index) const; // between (index, index+1)
+    QVariant value(int index) const;
+    QString text(int index) const;
 
 
     StepEnabled stepEnabled() const;
@@ -75,6 +78,9 @@ public Q_SLOTS:
     void setCurrentSectionIndex(int index); // if not valid, set -1
     void setPrefix(const QString& prefix);
     void setSuffix(int index, const QString& suffix);
+    void setValue(int index, const QVariant& sectionValue);
+    void setText(int index, const QString& sectionText);
+
 
 
 
@@ -122,7 +128,7 @@ public:
 
     void insert(int index, QtMultiSpinBoxElement* element, const QString &suffix);
     QtMultiSpinBoxData* take(int index);
-    QtMultiSpinBoxData* get(int index);
+    QtMultiSpinBoxData* get(int index) const;
 
 
     // slots
@@ -163,6 +169,11 @@ inline void QtMultiSpinBox::appendSpinElement(QtMultiSpinBoxElement* element, co
 inline bool QtMultiSpinBox::isEmpty() const
 {
     return count() <= 0;
+}
+
+inline QString QtMultiSpinBox::text() const
+{
+    return QAbstractSpinBox::text();
 }
 
 QT_END_NAMESPACE

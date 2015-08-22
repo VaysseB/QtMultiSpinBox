@@ -129,7 +129,7 @@ int QtMultiSpinBox::count() const
 }
 
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // property stuff
 
 int QtMultiSpinBox::currentSectionIndex() const
@@ -202,7 +202,7 @@ void QtMultiSpinBox::setSuffix(int index, const QString& suffix)
 }
 
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 
 QAbstractSpinBox::StepEnabled QtMultiSpinBox::stepEnabled() const
@@ -226,7 +226,7 @@ void QtMultiSpinBox::stepBy(int steps)
 }
 
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 
 void QtMultiSpinBox::focusInEvent(QFocusEvent* event)
@@ -236,6 +236,49 @@ void QtMultiSpinBox::focusInEvent(QFocusEvent* event)
     QAbstractSpinBox::focusInEvent(event);
 }
 
+
+//------------------------------------------------------------------------------
+
+
+QVariant QtMultiSpinBox::value(int index) const
+{
+    Q_ASSERT(index >= 0 && index < count());
+    Q_D(const QtMultiSpinBox);
+    QtMultiSpinBoxElement* e = d->get(index)->element;
+    QString s = d->textAt(text(), index);
+    return e->valueFromText(s);
+}
+
+QString QtMultiSpinBox::text(int index) const
+{
+    Q_ASSERT(index >= 0 && index < count());
+    Q_D(const QtMultiSpinBox);
+    return d->textAt(text(), index);
+}
+
+void QtMultiSpinBox::setValue(int index, const QVariant& sectionValue)
+{
+    Q_ASSERT(index >= 0 && index < count());
+    Q_D(QtMultiSpinBox);
+    QtMultiSpinBoxElement* element = d->get(index)->element;
+    QString textOfValue = element->textFromValue(sectionValue);
+    int pos = 0;
+    Q_ASSERT(element->validate(textOfValue, pos) != QValidator::Invalid);
+    QString s = d->setTextAt(text(), index, textOfValue);
+    d->changeText(lineEdit(), s);
+}
+
+void QtMultiSpinBox::setText(int index, const QString& sectionText)
+{
+    Q_ASSERT(index >= 0 && index < count());
+    Q_D(QtMultiSpinBox);
+    QtMultiSpinBoxElement* element = d->get(index)->element;
+    QString inputText = sectionText;
+    int pos = 0;
+    Q_ASSERT(element->validate(inputText, pos) != QValidator::Invalid);
+    QString s = d->setTextAt(text(), index, inputText);
+    d->changeText(lineEdit(), s);
+}
 
 //==============================================================================
 
@@ -322,7 +365,7 @@ QtMultiSpinBoxData* QtMultiSpinBoxPrivate::take(int index)
 }
 
 
-QtMultiSpinBoxData* QtMultiSpinBoxPrivate::get(int index)
+QtMultiSpinBoxData* QtMultiSpinBoxPrivate::get(int index) const
 {
     // index is valid, element exist
     return elementDatas.value(index);
