@@ -25,10 +25,15 @@ public slots:
 private slots:
      void on_actionQuit_triggered();
 
+     void on_multispinPos3D_editingFinished();
+     void on_multispinAttitudes_editingFinished();
+
 private:
      void buildRow1() const;
      void buildRow2() const;
      void buildRow3_4() const;
+     void buildRow5() const;
+     void buildRow6() const;
 
      void firstUpdateForAll();
 

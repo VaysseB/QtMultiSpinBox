@@ -289,8 +289,6 @@ QtMultiSpinBoxPrivate::QtMultiSpinBoxPrivate(QtMultiSpinBox *s) :
     clear();
 
     Q_Q(QtMultiSpinBox);
-    q->connect(q, SIGNAL(editingFinished()),
-               q, SLOT(_q_sectionEditingFinished()));
     q->connect(q->lineEdit(), SIGNAL(cursorPositionChanged(int,int)),
                q, SLOT(_q_cursorPositionChanged(int,int)));
 }
@@ -375,25 +373,15 @@ QtMultiSpinBoxData* QtMultiSpinBoxPrivate::get(int index) const
 //------------------------------------------------------------------------------
 
 
-void QtMultiSpinBoxPrivate::_q_sectionEditingFinished()
-{
-    Q_Q(QtMultiSpinBox);
-    if (currentSectionIndex >= 0)
-        Q_EMIT q->editingFinished(currentSectionIndex);
-}
-
-
 void QtMultiSpinBoxPrivate::_q_cursorPositionChanged(int, int new_)
 {
     Q_Q(QtMultiSpinBox);
     QList<QStringRef> splits;
     Q_ASSERT(checkAndSplit(q->text(), splits));
-    qDebug() << "\n_q_cursorPositionChanged" << q->text() << new_;
     int indexSplit = 0; // default is invalid
     bool ok = false;
     while (indexSplit < splits.count() && !ok) {
         QStringRef r = splits.value(indexSplit);
-        qDebug() << indexSplit << "/" << splits.count() << " = [" << r.position() << ";" << (r.position() + r.length()) << "]";
         ok = qIsBetweenEqual(r.position(), r.position() + r.length(), new_);
         indexSplit++;
     }
@@ -403,7 +391,6 @@ void QtMultiSpinBoxPrivate::_q_cursorPositionChanged(int, int new_)
         indexSplit--;
     // it can not found it (because it exclude prefix and suffixes)
     if (currentSectionIndex != indexSplit) {
-        qDebug() << "currentSectionIndexChanged" << currentSectionIndex << "-->" << indexSplit;
         currentSectionIndex = indexSplit;
         Q_EMIT q->currentSectionIndexChanged(currentSectionIndex);
     }

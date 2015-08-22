@@ -82,11 +82,8 @@ public Q_SLOTS:
     void setText(int index, const QString& sectionText);
 
 
-
-
 Q_SIGNALS:
     void currentSectionIndexChanged(int index);
-    void editingFinished(int index);
 
 
 protected:
@@ -95,7 +92,6 @@ protected:
     void focusInEvent(QFocusEvent* event);
 
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_sectionEditingFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged(int,int))
 
 
@@ -132,7 +128,6 @@ public:
 
 
     // slots
-    void _q_sectionEditingFinished();
     void _q_cursorPositionChanged(int old,int new_);
 
 
