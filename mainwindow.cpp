@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "QtMultiSpinBoxElements"
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -44,25 +46,25 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QList<QMultiSpinBox*> MainWindow::allMultiSpinBox() const
+QList<QtMultiSpinBox *> MainWindow::allMultiSpinBox() const
 {
-    return findChildren<QMultiSpinBox*>(QRegExp(".*"));
+    return findChildren<QtMultiSpinBox*>(QRegExp(".*"));
 }
 
 void MainWindow::firstUpdateForAll()
 {
     QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Maximum);
-    foreach(QMultiSpinBox* m, allMultiSpinBox()) {
+    foreach(QtMultiSpinBox* m, allMultiSpinBox()) {
         m->setSizePolicy(sp);
     }
 }
 
 void MainWindow::updateAllWithOptions() const
 {
-    foreach(QMultiSpinBox* m, allMultiSpinBox()) {
+    foreach(QtMultiSpinBox* m, allMultiSpinBox()) {
         m->setEnabled(ui->checkEnable->isChecked());
-        m->setTextAlignement((Qt::Alignment)ui->comboHTextAlign->currentData().toInt()
-                             | (Qt::Alignment)ui->comboVTextAlign->currentData().toInt());
+        m->setAlignment((Qt::Alignment)ui->comboHTextAlign->currentData().toInt()
+                        | (Qt::Alignment)ui->comboVTextAlign->currentData().toInt());
         m->setCurrentSectionIndex(ui->spinCurrentSection->value());
     }
 }
@@ -71,54 +73,54 @@ void MainWindow::buildRow1() const
 {
     ui->qmspbR1C2->setPrefix(QLatin1String("["));
 
-    ui->qmspbR1C3->setPrefix(QLatin1String("["));
+    ui->qmspbR1C3->setEnabled(false);
+    ui->qmspbR1C4->setEnabled(false);
 }
 
 void MainWindow::buildRow2() const
 {
-    ui->qmspbR2C1->insertSpinElement(0, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR2C1->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR2C2->setPrefix("[");
-    ui->qmspbR2C2->insertSpinElement(0, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR2C2->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR2C3->setPrefix("[");
-    ui->qmspbR2C3->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("]"));
+    ui->qmspbR2C3->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("]"));
 
-    ui->qmspbR2C4->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("]"));
+    ui->qmspbR2C4->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("]"));
 }
 
 void MainWindow::buildRow3_4() const
 {
-    ui->qmspbR3C1->insertSpinElement(0, new QMultiSpinBoxBinaryElement, " ");
-    ui->qmspbR3C1->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR3C1->appendSpinElement(new QtIntMultiSpinBoxElement, " ");
+    ui->qmspbR3C1->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR3C2->setPrefix(QLatin1String("["));
-    ui->qmspbR3C2->insertSpinElement(0, new QMultiSpinBoxBinaryElement, " ");
-    ui->qmspbR3C2->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR3C2->appendSpinElement(new QtIntMultiSpinBoxElement, " ");
+    ui->qmspbR3C2->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR3C3->setPrefix(QLatin1String("["));
-    ui->qmspbR3C3->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("] "));
-    ui->qmspbR3C3->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR3C3->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("] "));
+    ui->qmspbR3C3->appendSpinElement(new QtIntMultiSpinBoxElement);
 
-    ui->qmspbR3C4->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("] "));
-    ui->qmspbR3C4->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR3C4->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("] "));
+    ui->qmspbR3C4->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR4C1->setPrefix(QLatin1String("["));
-    ui->qmspbR4C1->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("] "));
-    ui->qmspbR4C1->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR4C1->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("] "));
+    ui->qmspbR4C1->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR4C2->setPrefix(QLatin1String("["));
-    ui->qmspbR4C2->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("] ["));
-    ui->qmspbR4C2->insertSpinElement(1, new QMultiSpinBoxBinaryElement);
+    ui->qmspbR4C2->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("] ["));
+    ui->qmspbR4C2->appendSpinElement(new QtIntMultiSpinBoxElement);
 
     ui->qmspbR4C3->setPrefix(QLatin1String("["));
-    ui->qmspbR4C3->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("] ["));
-    ui->qmspbR4C3->insertSpinElement(1, new QMultiSpinBoxBinaryElement, QLatin1String("]"));
+    ui->qmspbR4C3->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("] ["));
+    ui->qmspbR4C3->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("]"));
 
     ui->qmspbR4C4->setPrefix(QLatin1String("["));
-    ui->qmspbR4C4->insertSpinElement(0, new QMultiSpinBoxBinaryElement, QLatin1String("] "));
-    ui->qmspbR4C4->insertSpinElement(1, new QMultiSpinBoxBinaryElement, QLatin1String("]"));
-
+    ui->qmspbR4C4->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("] "));
+    ui->qmspbR4C4->appendSpinElement(new QtIntMultiSpinBoxElement, QLatin1String("]"));
 }
 
 void MainWindow::on_actionQuit_triggered()

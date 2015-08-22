@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-class QMultiSpinBox;
+class QtMultiSpinBox;
 
 namespace Ui {
 class MainWindow;
@@ -17,7 +17,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    QList<QMultiSpinBox*> allMultiSpinBox() const;
+    QList<QtMultiSpinBox*> allMultiSpinBox() const;
 
 public slots:
      void updateAllWithOptions() const;

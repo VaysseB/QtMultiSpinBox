@@ -188,16 +188,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR1C1" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR1C1" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR1C2" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR1C2" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR1C3" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR1C3" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR1C4" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR1C4" native="true"/>
          </item>
         </layout>
        </item>
@@ -216,16 +216,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR2C1" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR2C1" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR2C2" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR2C2" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR2C3" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR2C3" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR2C4" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR2C4" native="true"/>
          </item>
         </layout>
        </item>
@@ -244,16 +244,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR3C1" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR3C1" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR3C2" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR3C2" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR3C3" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR3C3" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR3C4" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR3C4" native="true"/>
          </item>
         </layout>
        </item>
@@ -272,16 +272,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR4C1" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR4C1" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR4C2" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR4C2" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR4C3" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR4C3" native="true"/>
          </item>
          <item>
-          <widget class="QMultiSpinBox" name="qmspbR4C4" native="true"/>
+          <widget class="QtMultiSpinBox" name="qmspbR4C4" native="true"/>
          </item>
         </layout>
        </item>
@@ -343,9 +343,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QMultiSpinBox</class>
+   <class>QtMultiSpinBox</class>
    <extends>QWidget</extends>
-   <header location="global">QMultiSpinBox</header>
+   <header location="global">QtMultiSpinBox</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
